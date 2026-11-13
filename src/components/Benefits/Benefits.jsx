@@ -1,26 +1,44 @@
 import './Benefits.css'
 
 function Benefits() {
+  const benefits = [
+    {
+      icon: '🚚',
+      title: 'Entrega Rápida',
+      description: 'Receba seus produtos com praticidade e segurança em até 24h nas principais regiões.'
+    },
+    {
+      icon: '🔒',
+      title: 'Compra Segura',
+      description: 'Seus dados e suas compras protegidos com criptografia de ponta e certificados de segurança.'
+    },
+    {
+      icon: '✅',
+      title: 'Produtos de Qualidade',
+      description: 'Medicamentos e produtos originais, aprovados pela ANVISA, para sua saúde e família.'
+    },
+    {
+      icon: '📄',
+      title: 'Envio de Receita',
+      description: 'Envie sua receita controlada em PDF de forma simples, segura e com retenção de lote.'
+    }
+  ]
+
   return (
-    <section className="benefits">
-      <div className="benefit">
-        <h3>Entrega rápida</h3>
-        <p>Receba seus produtos com praticidade e segurança.</p>
-      </div>
-
-      <div className="benefit">
-        <h3>Compra segura</h3>
-        <p>Seus dados e suas compras protegidos.</p>
-      </div>
-
-      <div className="benefit">
-        <h3>Produtos de qualidade</h3>
-        <p>Cuidados para sua saúde e para toda a família.</p>
-      </div>
-
-      <div className="benefit">
-        <h3>Envio de receita</h3>
-        <p>Envie sua receita de forma simples e segura.</p>
+    <section className="benefits" aria-labelledby="benefits-title">
+      <div className="container">
+        <h2 id="benefits-title" className="sr-only">Benefícios FarmaVida</h2>
+        <div className="benefits-grid">
+          {benefits.map((benefit, index) => (
+            <article key={index} className="benefit-card">
+              <div className="benefit-icon" aria-hidden="true">
+                {benefit.icon}
+              </div>
+              <h3>{benefit.title}</h3>
+              <p>{benefit.description}</p>
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   )
