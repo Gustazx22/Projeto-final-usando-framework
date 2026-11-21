@@ -7,6 +7,10 @@ export function UserProvider({ children }) {
   const [user, setUser] = useState(null)
   const [addresses, setAddresses] = useState([])
   const [orders, setOrders] = useState([])
+  const [receipts, setReceipts] = useState([])
+  const [receiptEvents, setReceiptEvents] = useState([])
+  const [reviewQueue, setReviewQueue] = useState([])
+  const [isPharmacist, setIsPharmacist] = useState(false)
   const [loading, setLoading] = useState(true)
   const [authError, setAuthError] = useState('')
   const [dataError, setDataError] = useState('')
@@ -27,12 +31,23 @@ export function UserProvider({ children }) {
     const request = ++dataRequest.current
     setDataLoading(true)
     setDataError('')
-    const [addr, ord] = await Promise.allSettled([db.listAddresses(), db.listOrders()])
+    const [addr, ord, docs, events, pharmacist] = await Promise.allSettled([
+      db.listAddresses(), db.listOrders(), db.listMyReceipts(), db.listReceiptEvents(), db.isPharmacist(),
+    ])
+    let queue = { status: 'fulfilled', value: [] }
+    if (pharmacist.status === 'fulfilled' && pharmacist.value === true) {
+      try { queue = { status: 'fulfilled', value: await db.listReviewQueue() } }
+      catch (error) { queue = { status: 'rejected', reason: error } }
+    }
     if (!alive.current || request !== dataRequest.current || userRef.current?.id !== userId) return
     setAddresses(addr.status === 'fulfilled' ? addr.value : [])
     setOrders(ord.status === 'fulfilled' ? ord.value : [])
-    if (addr.status === 'rejected' || ord.status === 'rejected') {
-      setDataError('Sua conta está conectada, mas não foi possível carregar todos os endereços ou pedidos. Tente novamente.')
+    setReceipts(docs.status === 'fulfilled' ? docs.value : [])
+    setReceiptEvents(events.status === 'fulfilled' ? events.value : [])
+    setIsPharmacist(pharmacist.status === 'fulfilled' && pharmacist.value === true)
+    setReviewQueue(queue.status === 'fulfilled' ? queue.value : [])
+    if ([addr, ord, docs, events, pharmacist, queue].some((result) => result.status === 'rejected')) {
+      setDataError('Sua conta está conectada, mas alguns dados não carregaram. Confira o SQL das etapas 5–7 e tente novamente.')
     }
     setDataLoading(false)
   }, [])
@@ -48,6 +63,10 @@ export function UserProvider({ children }) {
       ++dataRequest.current
       setAddresses([])
       setOrders([])
+      setReceipts([])
+      setReceiptEvents([])
+      setReviewQueue([])
+      setIsPharmacist(false)
       setDataError('')
       setDataLoading(Boolean(nextUser))
       if (!nextUser) setAccountOpen(false)
@@ -133,9 +152,19 @@ export function UserProvider({ children }) {
   const placeOrder = useCallback(async (order) => {
     const owner = userRef.current?.id
     const created = await db.createOrder(order)
-    if (alive.current && owner === userRef.current?.id) setOrders((prev) => [created, ...prev])
+    if (alive.current && owner === userRef.current?.id) {
+      setOrders((prev) => [created, ...prev])
+      if (order.receipt) void loadData(owner)
+    }
     return created
-  }, [])
+  }, [loadData])
+
+  const reviewReceipt = useCallback(async (receiptId, decision, note) => {
+    const result = await db.reviewReceipt(receiptId, decision, note)
+    await loadData(userRef.current?.id)
+    return result
+  }, [loadData])
+  const getReceiptUrl = useCallback((path) => db.getReceiptUrl(path), [])
 
   const openAuth = useCallback((tab = 'login') => { setAuthTab(tab); setAuthOpen(true) }, [])
   const closeAuth = useCallback(() => setAuthOpen(false), [])
@@ -155,12 +184,12 @@ export function UserProvider({ children }) {
     updateAddress,
     removeAddress,
     setDefaultAddress,
-    orders,
+    orders, receipts, receiptEvents, reviewQueue, isPharmacist, reviewReceipt, getReceiptUrl,
     placeOrder,
     authOpen, authTab, setAuthTab, openAuth, closeAuth,
     accountOpen, accountTab, setAccountTab, openAccount, closeAccount,
   }), [user, loading, authError, dataError, dataLoading, reloadAccountData, register, login, logout, changePassword, requestPasswordReauth, addresses, addAddress, updateAddress, removeAddress, setDefaultAddress,
-    orders, placeOrder, authOpen, authTab, openAuth, closeAuth, accountOpen, accountTab, openAccount, closeAccount])
+    orders, receipts, receiptEvents, reviewQueue, isPharmacist, reviewReceipt, getReceiptUrl, placeOrder, authOpen, authTab, openAuth, closeAuth, accountOpen, accountTab, openAccount, closeAccount])
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>
 }

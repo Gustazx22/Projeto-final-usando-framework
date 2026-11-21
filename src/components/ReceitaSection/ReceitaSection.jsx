@@ -11,14 +11,15 @@ export default function ReceitaSection({ receipt, onReceiptChange }) {
           <span className="receita-tag">📄 Receita digital</span>
           <h2 id="receita-title">Tem receita? A gente encontra para você</h2>
           <p>
-            Envie o PDF da sua receita (inclusive de controlados). Ela fica anexada ao seu pedido e a retenção
-            de lote é feita conforme a legislação.
+            Selecione um PDF para anexar à compra. Após o envio privado, a receita ficará
+            aguardando análise manual por um perfil farmacêutico autorizado.
           </p>
           <ul>
             <li>✔ Apenas arquivos PDF de até 10 MB</li>
-            <li>✔ Conferência por farmacêutico responsável</li>
-            <li>✔ Anexada automaticamente ao finalizar o pedido</li>
+            <li>✔ Análise farmacêutica simulada e manual</li>
+            <li>✔ O PDF será enviado ao concluir um pedido</li>
           </ul>
+          <p className="fv-hint">Projeto acadêmico: use somente receitas fictícias para testes. Não envie receitas reais com dados pessoais.</p>
           <a className="btn btn-outline" href={wa} target="_blank" rel="noopener noreferrer">Falar com um farmacêutico</a>
         </div>
         <div className="receita-upload">

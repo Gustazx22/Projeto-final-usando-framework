@@ -1,81 +1,69 @@
 import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react'
+import {
+  CART_STORAGE_KEY, MAX_CART_LINES, MAX_CART_QUANTITY,
+  normalizeCartItem, readStoredCart, writeStoredCart,
+} from '../services/cart.js'
 
 const CartContext = createContext(undefined)
 
 export function CartProvider({ children }) {
-  const [items, setItems] = useState(() => {
-    const saved = localStorage.getItem('farmavida-cart')
-    return saved ? JSON.parse(saved) : []
-  })
+  const [items, setItems] = useState(readStoredCart)
   const [isOpen, setIsOpen] = useState(false)
 
-  // Persist to localStorage
+  // Carrinho persistente, mesmo se o armazenamento estiver corrompido/indisponível.
+  useEffect(() => { writeStoredCart(items) }, [items])
+
+  // Outras abas abertas no navegador recebem as alterações sem exigir F5.
   useEffect(() => {
-    localStorage.setItem('farmavida-cart', JSON.stringify(items))
-  }, [items])
+    const sync = (event) => {
+      if (event.key === CART_STORAGE_KEY || event.key === null) {
+        setItems(readStoredCart())
+      }
+    }
+    window.addEventListener('storage', sync)
+    return () => window.removeEventListener('storage', sync)
+  }, [])
 
   const totalItems = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items])
-  const totalPrice = useMemo(() => items.reduce((sum, item) => sum + item.price * item.quantity, 0), [items])
+  const totalPrice = useMemo(() => Math.round(items.reduce((sum, item) => sum + item.price * item.quantity, 0) * 100) / 100, [items])
 
   const addItem = useCallback((newItem) => {
-    setItems(prev => {
-      const existing = prev.find(item => item.id === newItem.id)
-      if (existing) {
-        return prev.map(item =>
-          item.id === newItem.id ? { ...item, quantity: item.quantity + 1 } : item
-        )
-      }
-      return [...prev, { ...newItem, quantity: 1 }]
+    const item = normalizeCartItem({ ...newItem, quantity: 1 })
+    if (!item) return
+    setItems((previous) => {
+      const existing = previous.find((x) => x.id === item.id)
+      if (existing) return previous.map((x) => x.id === item.id
+        ? { ...item, quantity: Math.min(MAX_CART_QUANTITY, x.quantity + 1) } : x)
+      if (previous.length >= MAX_CART_LINES) return previous
+      return [...previous, item]
     })
     setIsOpen(true)
   }, [])
 
-  const removeItem = useCallback((id) => {
-    setItems(prev => prev.filter(item => item.id !== id))
-  }, [])
-
+  const removeItem = useCallback((id) => { setItems((previous) => previous.filter((x) => x.id !== id)) }, [])
   const updateQuantity = useCallback((id, quantity) => {
-    if (quantity <= 0) {
-      removeItem(id)
-      return
-    }
-    setItems(prev => prev.map(item => item.id === id ? { ...item, quantity } : item))
-  }, [removeItem])
-
-  const clearCart = useCallback(() => {
-    setItems([])
-    setIsOpen(false)
+    if (!Number.isSafeInteger(quantity)) return
+    setItems((previous) => quantity <= 0
+      ? previous.filter((x) => x.id !== id)
+      : previous.map((x) => x.id === id ? { ...x, quantity: Math.min(quantity, MAX_CART_QUANTITY) } : x))
   }, [])
 
+  const clearCart = useCallback(() => { setItems([]); setIsOpen(false) }, [])
   const openCart = useCallback(() => setIsOpen(true), [])
   const closeCart = useCallback(() => setIsOpen(false), [])
-  const toggleCart = useCallback(() => setIsOpen(prev => !prev), [])
+  const toggleCart = useCallback(() => setIsOpen((previous) => !previous), [])
 
   const value = useMemo(() => ({
-    items,
-    totalItems,
-    totalPrice,
-    addItem,
-    removeItem,
-    updateQuantity,
-    clearCart,
-    isOpen,
-    openCart,
-    closeCart,
-    toggleCart,
-  }), [items, totalItems, totalPrice, addItem, removeItem, updateQuantity, clearCart, isOpen, openCart, closeCart, toggleCart])
+    items, totalItems, totalPrice, addItem, removeItem, updateQuantity,
+    clearCart, isOpen, openCart, closeCart, toggleCart,
+  }), [items, totalItems, totalPrice, addItem, removeItem, updateQuantity,
+    clearCart, isOpen, openCart, closeCart, toggleCart])
 
-  return (
-    <CartContext.Provider value={value}>
-      {children}
-    </CartContext.Provider>
-  )
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }
 
 export function useCart() {
   const context = useContext(CartContext)
-  if (!context) {
-    throw new Error('useCart deve ser usado dentro de um CartProvider')
-  }
+  if (!context) throw new Error('useCart deve ser usado dentro de um CartProvider')
   return context
 }

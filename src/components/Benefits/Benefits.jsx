@@ -10,17 +10,17 @@ function Benefits() {
     {
       icon: '🔒',
       title: 'Compra Segura',
-      description: 'Seus dados e suas compras protegidos com criptografia de ponta e certificados de segurança.'
+      description: 'Pedidos simulados, com validações do lado do servidor e acesso controlado aos dados.'
     },
     {
       icon: '✅',
       title: 'Produtos de Qualidade',
-      description: 'Medicamentos e produtos originais, aprovados pela ANVISA, para sua saúde e família.'
+      description: 'Catálogo demonstrativo com produtos fictícios para o projeto acadêmico.'
     },
     {
       icon: '📄',
       title: 'Envio de Receita',
-      description: 'Envie sua receita controlada em PDF de forma simples, segura e com retenção de lote.'
+      description: 'Anexe um PDF fictício ao pedido para análise manual simulada em armazenamento privado.'
     }
   ]
 

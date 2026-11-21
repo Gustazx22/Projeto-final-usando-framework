@@ -37,6 +37,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
         price: product.price,
         image: product.image,
         category: product.category,
+      requiresPrescription: product.requiresPrescription === true,
       })
       for (let i = 1; i < selectedQty; i++) {
         addItem({
@@ -45,6 +46,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
           price: product.price,
           image: product.image,
           category: product.category,
+      requiresPrescription: product.requiresPrescription === true,
         })
       }
       onClose()

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useCart } from '../../context/CartContext'
 import { useToast } from '../../context/ToastContext'
 import { useUser } from '../../context/UserContext'
@@ -13,9 +13,9 @@ import './CheckoutModal.css'
 
 const STEPS = ['Entrega', 'Pagamento', 'Revisão']
 const PAYMENTS = [
-  { id: 'pix', icon: '⚡', title: 'Pix', desc: 'Aprovação na hora, com QR Code' },
-  { id: 'cartao', icon: '💳', title: 'Cartão de crédito', desc: 'Até 3x sem juros' },
-  { id: 'boleto', icon: '🧾', title: 'Boleto bancário', desc: 'Vence em 3 dias úteis' },
+  { id: 'pix', icon: '⚡', title: 'Pix', desc: 'Simulação: nenhuma transferência real' },
+  { id: 'cartao', icon: '💳', title: 'Cartão de crédito', desc: 'Simulação: até 3x sem cobrança real' },
+  { id: 'boleto', icon: '🧾', title: 'Boleto bancário', desc: 'Simulação: sem emissão real' },
   { id: 'whatsapp', icon: '💬', title: 'Combinar no WhatsApp', desc: 'Pague direto com a farmácia' },
 ]
 const EMPTY_CARD = { number: '', name: '', expiry: '', cvv: '', installments: '1' }
@@ -35,6 +35,7 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
   const [card, setCard] = useState(EMPTY_CARD)
   const [errors, setErrors] = useState({})
   const [busy, setBusy] = useState(false)
+  const submitting = useRef(false)
   const [done, setDone] = useState(null) // pedido concluído
 
   const deliveryFee = totalPrice >= STORE.freeShippingFrom ? 0 : STORE.deliveryFee
@@ -91,45 +92,44 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
 
   /* ---------- confirmar pedido ---------- */
   const confirm = async () => {
-    if (!selectedAddress) return
+    if (submitting.current || busy || !selectedAddress || items.length === 0) return
+    if (items.some((item) => item.requiresPrescription) && !receipt) {
+      showToast('Um dos produtos exige receita. Anexe um PDF para prosseguir.', 'error')
+      return
+    }
+    submitting.current = true
     setBusy(true)
     try {
-      if (payment === 'cartao') await sleep(1500) // simulação da operadora
-
-      const addr = {
-        label: selectedAddress.label, cep: selectedAddress.cep, endereco: selectedAddress.endereco,
-        numero: selectedAddress.numero, complemento: selectedAddress.complemento || '',
-        bairro: selectedAddress.bairro, cidade: selectedAddress.cidade, estado: selectedAddress.estado,
-      }
+      if (payment === 'cartao') await sleep(400) // processamento simulado
       const order = await placeOrder({
-        itens: items.map((i) => ({ id: i.id, nome: i.name, qtd: i.quantity, preco: i.price })),
-        subtotal: totalPrice,
-        entrega: deliveryFee,
-        total,
-        pagamento: payment,
-        status: payment === 'cartao' ? 'pago' : payment === 'whatsapp' ? 'pendente' : 'aguardando_pagamento',
-        endereco: addr,
+        items: items.map((i) => ({ id: i.id, qtd: i.quantity })),
+        addressId: selectedAddress.id,
+        payment,
+        expectedTotal: Math.round(total * 100) / 100,
         observacoes: obs,
-        receita: receipt?.name || '',
+        receipt,
       })
 
       const txid = String(order.id).replace(/[^A-Za-z0-9]/g, '').slice(0, 25)
       setDone({
         order,
-        items: items.map((i) => ({ ...i })),
-        address: selectedAddress,
-        payment,
-        pix: payment === 'pix'
-          ? buildPixPayload({ key: STORE.pixKey, name: STORE.name, city: STORE.city, amount: total, txid })
+        // Montantes da confirmação vêm do banco, nunca do snapshot do carrinho.
+        items: order.itens.map((i) => ({ id: i.id, name: i.nome, quantity: i.qtd, price: Number(i.preco) })),
+        address: order.endereco,
+        payment: order.pagamento,
+        pix: order.pagamento === 'pix'
+          ? buildPixPayload({ key: STORE.pixKey, name: STORE.name, city: STORE.city, amount: Number(order.total), txid })
           : null,
-        card: payment === 'cartao'
+        card: order.pagamento === 'cartao'
           ? { brand: cardBrand(card.number) || 'Cartão', last4: card.number.replace(/\D/g, '').slice(-4), parcelas: Number(card.installments) }
           : null,
       })
       clearCart()
+      onReceiptChange(null)
     } catch (err) {
       showToast(err.message || 'Não foi possível concluir o pedido.', 'error')
     } finally {
+      submitting.current = false
       setBusy(false)
     }
   }
@@ -144,7 +144,7 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
       `*ENTREGA:*\n${a.endereco}, ${a.numero}${a.complemento ? ` - ${a.complemento}` : ''}\n${a.bairro} - ${a.cidade}/${a.estado}\nCEP: ${a.cep}\n\n` +
       `*ITENS:*\n${lines}\n\n*Subtotal:* ${formatBRL(o.subtotal)}\n*Entrega:* ${o.entrega === 0 ? 'Grátis' : formatBRL(o.entrega)}\n*TOTAL:* ${formatBRL(o.total)}\n\n` +
       `*Pagamento:* ${PAYMENTS.find((p) => p.id === d.payment)?.title}\n` +
-      `${o.observacoes ? `*Obs:* ${o.observacoes}\n` : ''}${o.receita ? `*Receita (PDF):* ${o.receita}` : ''}`
+      `${o.observacoes ? `*Obs:* ${o.observacoes}\n` : ''}${o.receita ? `*Receita:* enviada para análise farmacêutica simulada.` : ''}`
     return `https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent(msg)}`
   }
 
@@ -182,12 +182,15 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
     body = (
       <div className="ck-done">
         <div className="ck-done-icon" aria-hidden="true">✓</div>
-        <h3>Pedido realizado!</h3>
+        <h3>{done.order.status === 'aguardando_analise' ? 'Pedido recebido para análise!' : 'Pedido realizado!'}</h3>
         <p className="ck-code">Pedido #{String(done.order.id).replace(/-/g, '').slice(0, 8).toUpperCase()}</p>
 
-        {done.payment === 'pix' && (
+        {done.order.status === 'aguardando_analise' && (
+          <div className="fv-alert fv-info" role="status">Sua receita foi armazenada em área privada. Aguardando análise manual do farmacêutico. Nenhum pagamento foi processado. Consulte Minha conta → Pedidos.</div>
+        )}
+        {done.order.status !== 'aguardando_analise' && done.payment === 'pix' && (
           <div className="ck-pay-box">
-            <p><strong>Pague com Pix</strong> · {formatBRL(done.order.total)}</p>
+            <p><strong>Pix simulado — não pague</strong> · {formatBRL(done.order.total)}</p>
             <img
               className="ck-qr" alt="QR Code do Pix" width="220" height="220"
               src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&data=${encodeURIComponent(done.pix)}`}
@@ -196,31 +199,30 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
             <label className="ck-label" htmlFor="pix-code">Pix copia e cola</label>
             <textarea id="pix-code" className="ck-code-area" readOnly rows={3} value={done.pix} onFocus={(e) => e.target.select()} />
             <button type="button" className="btn btn-primary btn-full" onClick={() => copy(done.pix)}>Copiar código Pix</button>
-            <small>Abra o app do seu banco, escolha “Pix → Copia e Cola” ou leia o QR Code.</small>
+            <small>Código de demonstração: não efetue transferências reais.</small>
           </div>
         )}
 
-        {done.payment === 'cartao' && (
+        {done.order.status !== 'aguardando_analise' && done.payment === 'cartao' && (
           <div className="fv-alert fv-ok">
-            Pagamento aprovado no {done.card.brand} final {done.card.last4}
+            Pagamento com {done.card.brand} final {done.card.last4} simulado (sem cobrança)
             {done.card.parcelas > 1 ? ` em ${done.card.parcelas}x de ${formatBRL(done.order.total / done.card.parcelas)}` : ' à vista'}.
           </div>
         )}
 
-        {done.payment === 'boleto' && (
+        {done.order.status !== 'aguardando_analise' && done.payment === 'boleto' && (
           <div className="ck-pay-box">
             <p><strong>Boleto bancário</strong> · {formatBRL(done.order.total)}</p>
-            <small>Vencimento em 3 dias úteis. O boleto é enviado ao seu e-mail e ao WhatsApp assim que a farmácia confirmar o pedido.</small>
+            <small>Pagamento por boleto apenas demonstrativo. Nenhum boleto real é emitido ou enviado.</small>
           </div>
         )}
 
-        {done.payment === 'whatsapp' && (
+        {done.order.status !== 'aguardando_analise' && done.payment === 'whatsapp' && (
           <div className="fv-alert fv-info">Envie o pedido pelo WhatsApp para combinar a forma de pagamento com a farmácia.</div>
         )}
 
         <p className="ck-demo">
-          Ambiente de demonstração: nenhuma cobrança real é feita. Para vender de verdade, o pagamento deve passar por um
-          gateway (Mercado Pago, Stripe, Pagar.me…).
+          Ambiente de demonstração: pedido registrado, mas nenhum pagamento foi realizado ou aprovado. Para cobranças reais, é obrigatório integrar um gateway de pagamento.
         </p>
 
         <div className="ck-done-actions">
@@ -328,13 +330,13 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
                     ))}
                   </select>
                 </div>
-                <p className="fv-hint">🔒 Os dados do cartão não são salvos em nenhum lugar.</p>
+                <p className="fv-hint">🔒 Use somente dados fictícios/de teste. Nenhuma cobrança ou armazenamento de cartão é realizado.</p>
               </div>
             )}
 
             <div className="ck-receipt">
-              <h4>Receita médica (opcional)</h4>
-              <ReceiptUpload onReceiptChange={onReceiptChange} currentReceipt={receipt} helpText="Anexe o PDF se houver medicamento controlado." />
+              <h4>Receita médica {items.some((item) => item.requiresPrescription) ? '(obrigatória para um dos produtos)' : '(opcional)'}</h4>
+              <ReceiptUpload onReceiptChange={onReceiptChange} currentReceipt={receipt} required={items.some((item) => item.requiresPrescription)} helpText="PDF até 10 MB, armazenado de forma privada ao confirmar. Use receitas fictícias no projeto acadêmico." />
             </div>
           </div>
         )}
@@ -384,7 +386,7 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
           <button type="button" className="btn btn-primary" onClick={next}>Continuar</button>
         ) : (
           <button type="button" className="btn btn-primary btn-lg" onClick={confirm} disabled={busy}>
-            {busy ? (payment === 'cartao' ? 'Processando pagamento…' : 'Enviando…') : `Confirmar pedido · ${formatBRL(total)}`}
+            {busy ? (receipt ? 'Enviando receita e pedido…' : 'Registrando pedido…') : `Confirmar pedido · ${formatBRL(total)}`}
           </button>
         )}
       </div>

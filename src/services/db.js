@@ -7,11 +7,13 @@
  *
  * Os componentes continuam usando as mesmas operações em ambos os modos.
  */
-import { isRemote, supabase, supabaseUrl as URL_BASE, supabaseKey as ANON_KEY, supabaseConfigError } from './supabase.js'
+import { isRemote, supabase, supabaseConfigError } from './supabase.js'
 import { createRemoteAuth } from './auth.js'
 import { validatePasswordChange } from './passwords.js'
 import { createRemoteAddresses, createLocalAddresses } from './addresses.js'
 import { createRemoteCatalog, createLocalCatalog } from './catalog.js'
+import { createRemoteOrders, createLocalOrders } from './orders.js'
+import { createRemoteReceipts, createLocalReceipts } from './receipts.js'
 
 export { isRemote } from './supabase.js'
 
@@ -30,53 +32,12 @@ const readJSON = (key, fallback) => {
 }
 const writeJSON = (key, value) => localStorage.setItem(key, JSON.stringify(value))
 
-/* ============================ Supabase ============================ */
-async function request(path, { method = 'GET', body, token, headers = {} } = {}) {
-  const res = await fetch(`${URL_BASE}${path}`, {
-    method,
-    headers: {
-      apikey: ANON_KEY,
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      ...headers,
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  })
-  const text = await res.text()
-  let data
-  try { data = text ? JSON.parse(text) : null } catch { data = null }
-  if (!res.ok) {
-    const msg = data?.msg || data?.message || data?.error_description || data?.error || `Erro ${res.status}`
-    throw new Error(translateError(msg))
-  }
-  return data
-}
-
-function translateError(msg) {
-  const m = String(msg).toLowerCase()
-  if (m.includes('invalid login')) return 'E-mail ou senha incorretos.'
-  if (m.includes('already registered') || m.includes('already been registered')) return 'Este e-mail já está cadastrado.'
-  if (m.includes('email not confirmed')) return 'Confirme seu e-mail antes de entrar (veja sua caixa de entrada).'
-  if (m.includes('password')) return 'A senha precisa ter pelo menos 6 caracteres.'
-  if (m.includes('failed to fetch')) return 'Sem conexão com o servidor. Verifique sua internet.'
-  return msg
-}
-
 const remote = {
   ...createRemoteCatalog(supabase),
   ...remoteAuth,
   ...remoteAddresses,
-  async createOrder(order) {
-    const token = await getToken()
-    const rows = await request('/rest/v1/orders', {
-      method: 'POST', token, headers: { Prefer: 'return=representation' }, body: order,
-    })
-    return rows[0]
-  },
-  async listOrders() {
-    const token = await getToken()
-    return request('/rest/v1/orders?select=*&order=created_at.desc', { token })
-  },
+  ...createRemoteOrders(supabase, { getToken }),
+  ...createRemoteReceipts(supabase, { getToken }),
 }
 
 /* ====================== Modo demonstração (localStorage) ====================== */
@@ -159,17 +120,8 @@ const local = {
     return user ? publicUser(user) : null
   },
   ...localAddresses,
-  async createOrder(order) {
-    const db = loadDb()
-    const row = { ...order, id: newId(), user_id: currentLocalUserId(), created_at: new Date().toISOString() }
-    db.orders.push(row)
-    saveDb(db)
-    return row
-  },
-  async listOrders() {
-    const id = currentLocalUserId()
-    return loadDb().orders.filter((o) => o.user_id === id).sort((a, b) => b.created_at.localeCompare(a.created_at))
-  },
+  ...createLocalOrders({ loadDb, saveDb, currentLocalUserId, newId }),
+  ...createLocalReceipts(),
 }
 
 export const db = isRemote ? remote : local

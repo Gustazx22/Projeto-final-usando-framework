@@ -5,21 +5,24 @@ import { formatBRL } from '../../utils/format'
 import { isRemote } from '../../services/db'
 import AddressForm from '../AddressForm/AddressForm'
 import ChangePasswordForm from '../ChangePasswordForm/ChangePasswordForm'
+import ReceiptReviewPanel from '../ReceiptReviewPanel/ReceiptReviewPanel'
 import Modal from '../ui/Modal'
 import './AccountModal.css'
 
 const PAY_LABEL = { pix: 'Pix', cartao: 'Cartão', boleto: 'Boleto', whatsapp: 'WhatsApp' }
-const STATUS_LABEL = { pendente: 'Pendente', aguardando_pagamento: 'Aguardando pagamento', pago: 'Pago' }
+const STATUS_LABEL = { pendente: 'Pendente', aguardando_pagamento: 'Aguardando pagamento (simulado)', pago: 'Pago', aguardando_analise: 'Aguardando análise', receita_aprovada: 'Receita aprovada', receita_rejeitada: 'Receita rejeitada', cancelado: 'Cancelado', enviado: 'Enviado', entregue: 'Entregue' }
 
 export default function AccountModal() {
   const {
     user, accountOpen, accountTab, setAccountTab, closeAccount, logout,
     addresses, addAddress, updateAddress, removeAddress, setDefaultAddress, orders,
     dataError, dataLoading, reloadAccountData,
+    receipts, receiptEvents, reviewQueue, isPharmacist, reviewReceipt, getReceiptUrl,
   } = useUser()
   const { showToast } = useToast()
   const [editor, setEditor] = useState(null) // null | { mode: "add" } | { mode: "edit", address }
   const [busy, setBusy] = useState(false)
+  const [openReceipt, setOpenReceipt] = useState(null)
 
   if (!user) return null
   const currentEditor = editor?.userId === user.id ? editor : null
@@ -52,15 +55,27 @@ export default function AccountModal() {
     finally { setBusy(false) }
   }
 
+  const viewReceipt = async (receipt) => {
+    setOpenReceipt(null)
+    try {
+      const url = await getReceiptUrl(receipt.storage_path)
+      setOpenReceipt({ id: receipt.id, url })
+    } catch (error) { showToast(error.message || 'Erro ao abrir PDF.', 'error') }
+  }
+
   const handleRemove = async (address) => {
     if (!window.confirm(`Remover o endereço "${address.label}"?`)) return
     await run(() => removeAddress(address.id), 'Endereço removido')
   }
 
   const tabs = [['dados', 'Meus dados'], ['enderecos', 'Endereços'], ['pedidos', 'Pedidos'], ['seguranca', 'Segurança']]
+  if (isPharmacist) tabs.push(['analise', 'Analisar receitas'])
 
   return (
-    <Modal open={accountOpen} onClose={handleClose} size="md" title="Minha conta" subtitle={user.email}>
+    <Modal open={accountOpen} onClose={handleClose}
+      size={accountTab === 'analise' && isPharmacist ? 'lg' : 'md'}
+      className={accountTab === 'analise' && isPharmacist ? 'fv-account-review-modal' : ''}
+      title="Minha conta" subtitle={user.email}>
       <div className="fv-tabs ac-tabs" role="tablist">
         {tabs.map(([key, label]) => (
           <button key={key} type="button" role="tab" aria-selected={accountTab === key}
@@ -127,6 +142,11 @@ export default function AccountModal() {
         )
       )}
 
+      {accountTab === 'analise' && isPharmacist && (
+        <ReceiptReviewPanel queue={reviewQueue} onReview={reviewReceipt} getReceiptUrl={getReceiptUrl}
+          onRefresh={reloadAccountData} loading={dataLoading} />
+      )}
+
       {accountTab === 'pedidos' && (
         <div className="ac-list">
           {orders.length === 0 && <p className="ac-empty">Você ainda não fez nenhum pedido.</p>}
@@ -142,6 +162,18 @@ export default function AccountModal() {
                   {o.itens.map((i, idx) => <li key={idx}>{i.qtd}× {i.nome}</li>)}
                 </ul>
                 <p className="ac-order-total">Total: <strong>{formatBRL(o.total)}</strong></p>
+                {receipts.filter((r) => r.order_id === o.id).map((receipt) => (
+                  <section key={receipt.id} className="ac-receipt-summary">
+                    <p><strong>Receita:</strong> {receipt.file_name}</p>
+                    <p><strong>Estado:</strong> {receipt.status === 'aguardando_analise' ? 'Aguardando análise' : receipt.status === 'aprovada' ? 'Aprovada' : 'Rejeitada'}</p>
+                    {receipt.review_note && <p><strong>Observação:</strong> {receipt.review_note}</p>}
+                    <button type="button" className="btn btn-outline btn-sm" onClick={() => viewReceipt(receipt)}>Gerar acesso ao PDF</button>
+                    {openReceipt?.id === receipt.id && <a href={openReceipt.url} target="_blank" rel="noopener noreferrer">Abrir PDF privado (60 segundos)</a>}
+                    {receiptEvents.filter((ev) => ev.receipt_id === receipt.id).map((event) => (
+                      <p key={event.id} className="fv-hint">{new Date(event.created_at).toLocaleString('pt-BR')}: {event.action} {event.note ? `— ${event.note}` : ''}</p>
+                    ))}
+                  </section>
+                ))}
               </div>
             </article>
           ))}

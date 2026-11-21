@@ -11,8 +11,8 @@ function Hero() {
           </div>
           <h1 id="hero-title">Sua saúde em <span className="highlight">boas mãos</span></h1>
           <p className="hero-subtitle">
-            Farmácia e drogaria virtual com entrega facilitada, receita digital em PDF para controlados
-            e retenção de lote. Compre medicamentos, genéricos, vitaminas e dermocosméticos com segurança.
+            Protótipo acadêmico de farmácia virtual: explore produtos fictícios, simule compras e
+            envie PDFs de teste para análise farmacêutica manual. Não há dispensação ou pagamento real.
           </p>
           <div className="hero-actions">
             <a href="#medicamentos" className="btn btn-primary btn-lg">Comprar agora <span aria-hidden="true">→</span></a>

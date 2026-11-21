@@ -54,6 +54,7 @@ export default function ProductCarousel({ id, title, products, showViewAll = fal
       price: product.price,
       image: product.image,
       category: product.category,
+      requiresPrescription: product.requiresPrescription === true,
     })
     showToast(`${product.name} adicionado ao carrinho!`, 'success')
     openCart()

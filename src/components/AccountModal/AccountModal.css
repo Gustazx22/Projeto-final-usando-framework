@@ -28,3 +28,26 @@
 /* A quarta aba permanece acessível em telas pequenas. */
 .ac-tabs { overflow-x: auto; }
 .ac-tabs .fv-tab { min-width: max-content; }
+
+.ac-receipt-summary { display: grid; gap: .35rem; margin-top: 1rem; padding: .8rem; border-radius: .7rem; background: #f2faf6; overflow-wrap: anywhere; }
+.ac-receipt-summary p { margin: 0; }
+
+/* A área de análise precisa de espaço; as outras abas preservam a largura padrão. */
+.fv-modal.fv-account-review-modal { max-width: 960px; }
+.fv-account-review-modal .fv-modal-body { overflow-x: hidden; }
+
+/* Cinco abas cabem em duas linhas em telas estreitas sem barra horizontal. */
+.ac-tabs {
+  flex-wrap: wrap;
+  overflow-x: visible;
+  gap: .4rem;
+}
+.ac-tabs .fv-tab {
+  flex: 1 1 115px;
+  min-width: 0;
+  white-space: normal;
+  text-align: center;
+}
+@media (max-width: 600px) {
+  .ac-tabs .fv-tab { flex-basis: calc(50% - .4rem); font-size: .82rem; }
+}
