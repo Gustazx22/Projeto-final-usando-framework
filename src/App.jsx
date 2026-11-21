@@ -1,5 +1,6 @@
 import { CartProvider } from './context/CartContext'
 import { ToastProvider } from './context/ToastContext'
+import { UserProvider } from './context/UserContext'
 import Header from './components/Header/Header'
 import Hero from './components/Hero/Hero'
 import Benefits from './components/Benefits/Benefits'
@@ -15,18 +16,20 @@ function App() {
 
   return (
     <CartProvider>
-      <ToastProvider>
-        <Header />
-        <main id="main-content">
-          <Hero />
-          <Benefits />
-          <Categories />
-          <WhatsAppGroup />
-        </main>
-        <Footer />
-        <CartDrawer onCheckout={setCheckoutOpen} />
-        <CheckoutModal isOpen={checkoutOpen} onClose={() => setCheckoutOpen(false)} />
-      </ToastProvider>
+      <UserProvider>
+        <ToastProvider>
+          <Header />
+          <main id="main-content">
+            <Hero />
+            <Benefits />
+            <Categories />
+            <WhatsAppGroup />
+          </main>
+          <Footer />
+          <CartDrawer onCheckout={setCheckoutOpen} />
+          <CheckoutModal isOpen={checkoutOpen} onClose={() => setCheckoutOpen(false)} />
+        </ToastProvider>
+      </UserProvider>
     </CartProvider>
   )
 }

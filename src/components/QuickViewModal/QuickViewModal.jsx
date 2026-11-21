@@ -7,14 +7,14 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
   const [selectedQty, setSelectedQty] = useState(1)
 
   useEffect(() => {
-    if (isOpen) {
-      setSelectedQty(1)
-      document.body.style.overflow = 'hidden'
-    }
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [isOpen])
+      if (isOpen) {
+        setSelectedQty(1)
+        document.body.style.overflow = 'hidden'
+      }
+      return () => {
+        document.body.style.overflow = ''
+      }
+    }, [isOpen])
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -28,17 +28,9 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
 
   if (!product || !isOpen) return null
 
-  const formatPrice = (price) => `R$ ${price.toFixed(2).replace('.', ',')}`
+    const formatPrice = (price) => `R$ ${price.toFixed(2).replace('.', ',')}`
 
-  const handleAddToCart = () => {
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      category: product.category,
-    })
-    for (let i = 1; i < selectedQty; i++) {
+    const handleAddToCart = () => {
       addItem({
         id: product.id,
         name: product.name,
@@ -46,14 +38,22 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
         image: product.image,
         category: product.category,
       })
+      for (let i = 1; i < selectedQty; i++) {
+        addItem({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.image,
+          category: product.category,
+        })
+      }
+      onClose()
     }
-    onClose()
-  }
 
-  return (
-    <>
-      <div className="modal-overlay" onClick={onClose} aria-hidden="true"></div>
-      <div className="modal quick-view-modal" role="dialog" aria-modal="true" aria-labelledby="quick-view-title">
+    return (
+      <>
+        {isOpen && <div className="modal-overlay" onClick={onClose} aria-hidden="true"></div>}
+        <div className="modal quick-view-modal" role="dialog" aria-modal="true" aria-labelledby="quick-view-title">
         <button className="modal-close" onClick={onClose} aria-label="Fechar visualização rápida">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <line x1="18" y1="6" x2="6" y2="18" />

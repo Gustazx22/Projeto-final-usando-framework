@@ -3,23 +3,22 @@ import { useEffect } from 'react'
 import './CartDrawer.css'
 
 export default function CartDrawer({ onCheckout }) {
-  const { items, totalItems, totalPrice, removeItem, updateQuantity, closeCart, clearCart } = useCart()
-  const isOpen = items.length > 0
+  const { items, totalItems, totalPrice, removeItem, updateQuantity, closeCart, clearCart, isOpen } = useCart()
 
   // Trap focus and prevent body scroll when cart is open
-  useEffect(() => {
-    if (!isOpen) return
+    useEffect(() => {
+      if (!isOpen) return
 
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') closeCart()
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-      document.body.style.overflow = ''
-    }
-  }, [isOpen, closeCart])
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') closeCart()
+      }
+      document.addEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown)
+        document.body.style.overflow = ''
+      }
+    }, [isOpen, closeCart])
 
   if (!isOpen) {
     return (

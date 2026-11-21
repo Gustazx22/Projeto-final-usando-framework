@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import './CheckoutModal.css'
 
 export default function CheckoutModal({ isOpen, onClose }) {
+  if (!isOpen) return null
+
   const { items, totalPrice, clearCart } = useCart()
   const { showToast } = useToast()
   const [step, setStep] = useState(1) // 1: dados, 2: endereço, 3: pagamento, 4: confirmação
@@ -142,9 +144,9 @@ export default function CheckoutModal({ isOpen, onClose }) {
   ]
 
   return (
-    <>
-      <div className="modal-overlay" onClick={onClose} aria-hidden="true"></div>
-      <div className="modal checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
+      <>
+        {isOpen && <div className="modal-overlay" onClick={onClose} aria-hidden="true"></div>}
+        <div className="modal checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
         <button className="modal-close" onClick={onClose} aria-label="Fechar checkout">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <line x1="18" y1="6" x2="6" y2="18" />

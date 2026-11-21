@@ -17,23 +17,23 @@ function Header() {
   }, [])
 
   const navItems = [
-    { label: 'Início', href: '#', icon: '🏠' },
-    { label: 'Medicamentos', href: '#medicamentos', icon: '💊' },
-    { label: 'Genéricos', href: '#genericos', icon: '🧪' },
-    { label: 'Higiene e Beleza', href: '#higiene', icon: '🧴' },
-    { label: 'Vitaminas', href: '#vitaminas', icon: '💪' },
-    { label: 'Ofertas', href: '#ofertas', icon: '🔥' },
-    { label: 'Enviar Receita', href: '#receita', icon: '📄' },
-  ]
+      { label: 'Início', href: '#', icon: '🏠' },
+      { label: 'Medicamentos', href: '#medicamentos', icon: '💊' },
+      { label: 'Genéricos', href: '#genericos', icon: '🧪' },
+      { label: 'Higiene', href: '#higiene', icon: '🧴' },
+      { label: 'Vitaminas', href: '#vitaminas', icon: '💪' },
+      { label: 'Ofertas', href: '#ofertas', icon: '🔥' },
+      { label: 'Receita', href: '#receita', icon: '📄' },
+    ]
 
   const categoryItems = [
-    { label: 'Medicamentos', href: '#medicamentos' },
-    { label: 'Genéricos', href: '#genericos' },
-    { label: 'Higiene e Beleza', href: '#higiene' },
-    { label: 'Vitaminas', href: '#vitaminas' },
-    { label: 'Cuidados com a Saúde', href: '#cuidados' },
-    { label: 'Ofertas', href: '#ofertas' },
-  ]
+      { label: 'Medicamentos', href: '#medicamentos' },
+      { label: 'Genéricos', href: '#genericos' },
+      { label: 'Higiene', href: '#higiene' },
+      { label: 'Vitaminas', href: '#vitaminas' },
+      { label: 'Cuidados', href: '#cuidados' },
+      { label: 'Ofertas', href: '#ofertas' },
+    ]
 
   return (
     <>
