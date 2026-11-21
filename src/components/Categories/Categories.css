@@ -1,2 +1,48 @@
 /* Categories component styles - using design system variables from index.css */
 /* All styles are now in the global index.css design system */
+/* Mensagens de carregamento e falha sem alterar o layout dos carrosséis. */
+.catalog-feedback { text-align: center; padding: 28px 12px; color: var(--text-secondary, #54635c); }
+.catalog-feedback .btn { margin-top: 12px; }
+
+
+/* Espaço reservado durante a consulta ao Supabase.
+   Evita que o conteúdo abaixo do catálogo mude de posição quando os produtos chegam. */
+.catalog-loading { min-height: 1px; }
+.catalog-placeholder-section { padding: var(--space-10) 0; }
+.catalog-placeholder-title { width: 190px; height: 30px; border-radius: 8px; margin-bottom: var(--space-5); }
+.catalog-placeholder-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+.catalog-placeholder-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+.catalog-placeholder-image { aspect-ratio: 3 / 4; width: 100%; }
+.catalog-placeholder-info { padding: 16px; height: 160px; }
+.catalog-placeholder-line { height: 14px; border-radius: 5px; margin-bottom: 18px; width: 82%; }
+.catalog-placeholder-line.short { width: 55%; }
+.catalog-shimmer {
+  background: linear-gradient(100deg, #e8f0eb 20%, #f6faf7 45%, #e8f0eb 70%);
+  background-size: 200% 100%;
+  animation: farmavida-skeleton 1.6s ease-in-out infinite;
+}
+@keyframes farmavida-skeleton {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+@media (max-width: 900px) {
+  .catalog-placeholder-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .catalog-placeholder-card:nth-child(n + 3) { display: none; }
+}
+@media (max-width: 560px) {
+  .catalog-placeholder-grid { grid-template-columns: minmax(0, 1fr); }
+  .catalog-placeholder-card:nth-child(n + 2) { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .catalog-shimmer { animation: none; }
+}

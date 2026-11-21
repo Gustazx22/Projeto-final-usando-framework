@@ -2376,24 +2376,6 @@ p { margin-bottom: var(--space-4); line-height: 1.7; }
   border-radius: var(--radius-full);
 }
 
-.categories-cta {
-  text-align: center;
-  padding: var(--space-12) var(--space-5);
-  background: var(--color-primary-bg);
-  border-radius: var(--radius-xl);
-  margin-top: var(--space-10);
-}
-
-.categories-cta p {
-  font-size: var(--fs-lg);
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-4);
-}
-
-.categories-cta .btn {
-  min-width: 280px;
-}
-
 /* Product Card adjustments for carousel */
 .product-card {
   cursor: pointer;

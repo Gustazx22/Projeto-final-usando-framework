@@ -11,6 +11,7 @@ import { isRemote, supabase, supabaseUrl as URL_BASE, supabaseKey as ANON_KEY, s
 import { createRemoteAuth } from './auth.js'
 import { validatePasswordChange } from './passwords.js'
 import { createRemoteAddresses, createLocalAddresses } from './addresses.js'
+import { createRemoteCatalog, createLocalCatalog } from './catalog.js'
 
 export { isRemote } from './supabase.js'
 
@@ -62,6 +63,7 @@ function translateError(msg) {
 }
 
 const remote = {
+  ...createRemoteCatalog(supabase),
   ...remoteAuth,
   ...remoteAddresses,
   async createOrder(order) {
@@ -98,6 +100,7 @@ const notifyLocalAuth = (user, event) => localAuthListeners.forEach((listener) =
 const localAddresses = createLocalAddresses({ loadDb, saveDb, currentLocalUserId, newId })
 
 const local = {
+  ...createLocalCatalog(),
   async signUp({ email, password, nome, telefone, cpf }) {
     const db = loadDb()
     const mail = email.trim().toLowerCase()
