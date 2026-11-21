@@ -4,7 +4,7 @@ import { useToast } from '../../context/ToastContext'
 import QuickViewModal from '../QuickViewModal/QuickViewModal'
 import './ProductCarousel.css'
 
-export default function ProductCarousel({ id, title, products, showViewAll = false, viewAllHref = '#' }) {
+export default function ProductCarousel({ id, title, products, showViewAll = false, viewAllHref = '#', onViewAll }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [quickViewProduct, setQuickViewProduct] = useState(null)
   const carouselRef = useRef(null)
@@ -85,11 +85,15 @@ export default function ProductCarousel({ id, title, products, showViewAll = fal
         <div className="container">
           <div className="carousel-header">
             <h2 id={`${title.toLowerCase().replace(/\s+/g, '-')}-title`} className="carousel-title">{title}</h2>
-            {showViewAll && (
+            {showViewAll && (onViewAll ? (
+              <button type="button" className="view-all-link" onClick={() => onViewAll(id)}>
+                Ver todos <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            ) : (
               <a href={viewAllHref} className="view-all-link">
                 Ver todos <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </a>
-            )}
+            ))}
           </div>
 
           <div className="carousel-wrapper">

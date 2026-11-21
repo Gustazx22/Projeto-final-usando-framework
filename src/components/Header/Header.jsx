@@ -37,11 +37,18 @@ function Header() {
       window.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
-    const el = document.querySelector(href)
-    if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - 84
-      window.scrollTo({ top, behavior: 'smooth' })
+    const targetId = href.slice(1)
+    if (sectionIds.includes(targetId) && targetId !== 'receita') {
+      // Uma categoria pode estar oculta pelos filtros; restaura a vitrine antes de rolar.
+      window.dispatchEvent(new CustomEvent('farmavida:navigate-category'))
     }
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+      const el = document.getElementById(targetId)
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY - 84
+        window.scrollTo({ top, behavior: 'smooth' })
+      }
+    }))
   }
 
   const initial = (user?.nome || user?.email || '?').trim()[0]?.toUpperCase()

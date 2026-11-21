@@ -46,3 +46,90 @@
 @media (prefers-reduced-motion: reduce) {
   .catalog-shimmer { animation: none; }
 }
+
+/* Etapa 4 — busca e filtros, mantendo a identidade visual verde do FarmaVida. */
+.catalog-controls {
+  display: grid;
+  gap: 18px;
+  margin: 0 0 26px;
+  padding: 24px;
+  background: var(--color-surface-alt, #f4faf7);
+  border: 1px solid var(--color-border, #dce9e2);
+  border-radius: var(--radius-lg, 16px);
+  scroll-margin-top: 110px;
+}
+.catalog-search-label, .catalog-filter-label {
+  display: block;
+  margin-bottom: 9px;
+  color: var(--color-text, #173c2b);
+  font-weight: 700;
+  font-size: 0.94rem;
+}
+.catalog-search-field {
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+  gap: 10px;
+  padding: 0 15px;
+  background: #fff;
+  border: 1.5px solid var(--color-border, #d1e7dd);
+  border-radius: 12px;
+  transition: border-color 0.15s ease;
+}
+.catalog-search-field:focus-within {
+  border-color: var(--color-primary, #007b5e);
+  outline: 2px solid color-mix(in srgb, var(--color-primary, #007b5e) 15%, transparent);
+}
+.catalog-search-field svg { width: 21px; height: 21px; flex-shrink: 0; color: var(--color-primary, #007b5e); }
+.catalog-search-field input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  padding: 12px 0;
+  background: transparent;
+  color: var(--color-text, #173c2b);
+  font: inherit;
+}
+.catalog-clear-search, .catalog-reset-link {
+  color: var(--color-primary, #007b5e);
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.catalog-filter-list { justify-content: flex-start; margin-bottom: 0; }
+.catalog-filter-list .filter-btn { cursor: pointer; }
+.catalog-result-count {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 12px;
+  color: var(--color-text-secondary, #54635c);
+  font-size: 0.92rem;
+}
+.catalog-empty {
+  margin: 18px 0 36px;
+  padding: 54px 18px;
+  text-align: center;
+  background: var(--color-surface-alt, #f4faf7);
+  border: 1px dashed var(--color-border, #d1e7dd);
+  border-radius: var(--radius-lg, 16px);
+}
+.catalog-empty h3 { margin: 0 0 10px; font-size: 1.35rem; }
+.catalog-empty p { color: var(--color-text-secondary, #54635c); }
+.catalog-empty .btn { margin-top: 8px; }
+.catalog-controls :is(button, input):focus-visible, .catalog-reset-link:focus-visible {
+  outline: 2px solid var(--color-primary, #007b5e);
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .catalog-controls { padding: 17px; }
+  .catalog-search-field { padding: 0 10px; }
+  .catalog-search-field input { font-size: 0.88rem; }
+}
