@@ -24,3 +24,7 @@
 
 .ac-editor-title { margin: 0 0 1rem; font-size: 1rem; }
 .ac-card-actions button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* A quarta aba permanece acessível em telas pequenas. */
+.ac-tabs { overflow-x: auto; }
+.ac-tabs .fv-tab { min-width: max-content; }

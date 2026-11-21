@@ -91,6 +91,9 @@ export function UserProvider({ children }) {
     return db.signIn(credentials)
   }, [])
 
+  const changePassword = useCallback(async (data) => db.changePassword(data), [])
+  const requestPasswordReauth = useCallback(async () => db.requestPasswordReauth(), [])
+
   const logout = useCallback(async () => {
     await db.signOut()
   }, [])
@@ -145,7 +148,7 @@ export function UserProvider({ children }) {
     loading, authError, dataError, dataLoading, reloadAccountData,
     register,
     login,
-    logout,
+    logout, changePassword, requestPasswordReauth,
     addresses,
     defaultAddress: addresses.find((a) => a.isDefault) || addresses[0] || null,
     addAddress,
@@ -156,7 +159,7 @@ export function UserProvider({ children }) {
     placeOrder,
     authOpen, authTab, setAuthTab, openAuth, closeAuth,
     accountOpen, accountTab, setAccountTab, openAccount, closeAccount,
-  }), [user, loading, authError, dataError, dataLoading, reloadAccountData, register, login, logout, addresses, addAddress, updateAddress, removeAddress, setDefaultAddress,
+  }), [user, loading, authError, dataError, dataLoading, reloadAccountData, register, login, logout, changePassword, requestPasswordReauth, addresses, addAddress, updateAddress, removeAddress, setDefaultAddress,
     orders, placeOrder, authOpen, authTab, openAuth, closeAuth, accountOpen, accountTab, openAccount, closeAccount])
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>

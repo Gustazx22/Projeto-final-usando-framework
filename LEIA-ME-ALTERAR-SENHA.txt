@@ -1,0 +1,28 @@
+FARMAVIDA - COMPLEMENTO DA ETAPA 2: ALTERAR SENHA
+
+O que mudou:
+- Minha conta > Segurança > Alterar senha.
+- Verifica a senha atual pelo Supabase Auth e confirma a nova senha no formulário.
+- Se o Supabase exigir reautenticação, pede um código por e-mail e aceita sua confirmação.
+- O modo demonstração também permite a troca com verificação da senha atual.
+- Não precisa executar SQL nem criar novas tabelas.
+
+TESTE MANUAL
+1. Execute npm ci e npm run dev.
+2. Acesse Minha conta > Segurança.
+3. Teste uma senha atual errada: a alteração deve falhar.
+4. Teste uma nova senha com menos de 8 caracteres ou diferente da confirmação.
+5. Envie a senha correta, escolha uma nova e salve.
+6. Saia da conta. Entre com a nova senha; teste que a antiga não funciona.
+7. Se aparecer o campo de código, confira o e-mail vinculado ao cadastro.
+
+TESTES AUTOMATIZADOS
+npm test
+npm run lint
+npm run build
+
+OBSERVAÇÕES
+- A senha é atualizada no Supabase Auth, não nas tabelas public do banco.
+- Outras regras de senha e segurança dependem da configuração do Supabase Auth.
+- Esta alteração é para quem está logado. Recuperação de senha esquecida por e-mail é outro fluxo.
+- No modo demonstração, senhas são armazenadas apenas localmente; não usar para produção.

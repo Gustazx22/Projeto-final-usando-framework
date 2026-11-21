@@ -9,6 +9,7 @@
  */
 import { isRemote, supabase, supabaseUrl as URL_BASE, supabaseKey as ANON_KEY, supabaseConfigError } from './supabase.js'
 import { createRemoteAuth } from './auth.js'
+import { validatePasswordChange } from './passwords.js'
 import { createRemoteAddresses, createLocalAddresses } from './addresses.js'
 
 export { isRemote } from './supabase.js'
@@ -116,6 +117,20 @@ const local = {
     writeJSON(SESSION_KEY, { userId: user.id })
     notifyLocalAuth(publicUser(user), 'SIGNED_IN')
     return publicUser(user)
+  },
+  async changePassword({ currentPassword, newPassword }) {
+    validatePasswordChange({ currentPassword, newPassword })
+    const id = currentLocalUserId()
+    if (!id) throw new Error('Faça login para alterar a senha.')
+    const database = loadDb()
+    const user = database.users.find((u) => u.id === id)
+    if (!user) throw new Error('Sua sessão expirou. Entre novamente.')
+    if (user.hash !== await hash(currentPassword)) throw new Error('A senha atual está incorreta.')
+    user.hash = await hash(newPassword)
+    saveDb(database)
+  },
+  async requestPasswordReauth() {
+    throw new Error('A confirmação por e-mail só está disponível com Supabase.')
   },
   async signOut() {
     localStorage.removeItem(SESSION_KEY)

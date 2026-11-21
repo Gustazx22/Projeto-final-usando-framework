@@ -4,6 +4,7 @@ import { useToast } from '../../context/ToastContext'
 import { formatBRL } from '../../utils/format'
 import { isRemote } from '../../services/db'
 import AddressForm from '../AddressForm/AddressForm'
+import ChangePasswordForm from '../ChangePasswordForm/ChangePasswordForm'
 import Modal from '../ui/Modal'
 import './AccountModal.css'
 
@@ -56,11 +57,11 @@ export default function AccountModal() {
     await run(() => removeAddress(address.id), 'Endereço removido')
   }
 
-  const tabs = [['dados', 'Meus dados'], ['enderecos', 'Endereços'], ['pedidos', 'Pedidos']]
+  const tabs = [['dados', 'Meus dados'], ['enderecos', 'Endereços'], ['pedidos', 'Pedidos'], ['seguranca', 'Segurança']]
 
   return (
     <Modal open={accountOpen} onClose={handleClose} size="md" title="Minha conta" subtitle={user.email}>
-      <div className="fv-tabs" role="tablist">
+      <div className="fv-tabs ac-tabs" role="tablist">
         {tabs.map(([key, label]) => (
           <button key={key} type="button" role="tab" aria-selected={accountTab === key}
             className={`fv-tab ${accountTab === key ? 'active' : ''}`} onClick={() => { setEditor(null); setAccountTab(key) }}>
@@ -90,6 +91,8 @@ export default function AccountModal() {
           <button type="button" className="btn btn-outline" onClick={() => run(logout)}>Sair da conta</button>
         </div>
       )}
+
+      {accountTab === 'seguranca' && <ChangePasswordForm key={user.id} />}
 
       {accountTab === 'enderecos' && (
         currentEditor ? (

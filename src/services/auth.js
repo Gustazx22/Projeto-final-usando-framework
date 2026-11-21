@@ -1,3 +1,5 @@
+import { validatePasswordChange } from './passwords.js'
+
 const toUser = (user) => user ? ({
   id: user.id,
   email: user.email || '',
@@ -14,6 +16,9 @@ export function authErrorMessage(error) {
   if (['user_already_exists', 'email_exists'].includes(code) || message.includes('already registered')) return 'Este e-mail já está cadastrado. Entre com sua senha.'
   if (['over_email_send_rate_limit', 'over_request_rate_limit'].includes(code) || error?.status === 429) return 'Muitas tentativas. Aguarde alguns minutos e tente novamente.'
   if (['weak_password', 'validation_failed'].includes(code) && message.includes('password')) return 'A senha não atende aos requisitos. Use pelo menos 6 caracteres e confira a política de senhas do projeto.'
+  if (code === 'same_password') return 'Escolha uma senha diferente da atual.'
+  if (code === 'reauthentication_needed') return 'O Supabase exige um código de confirmação para trocar sua senha.'
+  if (code === 'invalid_password' || message.includes('current password is incorrect')) return 'A senha atual está incorreta.'
   if (code === 'signup_disabled') return 'O cadastro está desativado. Entre em contato com o responsável pelo projeto.'
   if (message.includes('invalid api key') || message.includes('invalid apikey')) return 'A chave pública do Supabase é inválida. Confira o arquivo .env.'
   if (error?.name === 'AuthRetryableFetchError' || /fetch|network|conexão/.test(message)) return 'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.'
@@ -27,7 +32,12 @@ export function createRemoteAuth(client, { configurationError = '', redirectTo }
     if (!client) throw new Error(configurationError || 'Configure o Supabase antes de continuar.')
     return client.auth
   }
-  const check = (error) => { if (error) throw new Error(authErrorMessage(error)) }
+  const check = (error) => {
+    if (!error) return
+    const err = new Error(authErrorMessage(error))
+    err.code = error.code || ''
+    throw err
+  }
 
   return {
     async signUp({ email, password, nome, telefone, cpf }) {
@@ -43,6 +53,18 @@ export function createRemoteAuth(client, { configurationError = '', redirectTo }
       const { data, error } = await requireClient().signInWithPassword({ email: email.trim().toLowerCase(), password })
       check(error)
       return toUser(data.user)
+    },
+    async changePassword({ currentPassword, newPassword, nonce = '' }) {
+      validatePasswordChange({ currentPassword, newPassword })
+      // current_password é suportado pelo supabase-js 2.102+; o Auth valida no servidor.
+      const changes = { password: newPassword, current_password: currentPassword }
+      if (nonce) changes.nonce = nonce
+      const { error } = await requireClient().updateUser(changes)
+      check(error)
+    },
+    async requestPasswordReauth() {
+      const { error } = await requireClient().reauthenticate()
+      check(error)
     },
     async signOut() {
       // Encerra esta sessão, sem desconectar os demais dispositivos do usuário.
