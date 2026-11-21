@@ -9,6 +9,7 @@
  */
 import { isRemote, supabase, supabaseUrl as URL_BASE, supabaseKey as ANON_KEY, supabaseConfigError } from './supabase.js'
 import { createRemoteAuth } from './auth.js'
+import { createRemoteAddresses, createLocalAddresses } from './addresses.js'
 
 export { isRemote } from './supabase.js'
 
@@ -17,6 +18,7 @@ const remoteAuth = createRemoteAuth(supabase, {
   redirectTo: typeof window !== 'undefined' ? window.location.origin + window.location.pathname : undefined,
 })
 const getToken = () => remoteAuth.getToken()
+const remoteAddresses = createRemoteAddresses(supabase, { getToken })
 
 const SESSION_KEY = 'farmavida-session'
 const LOCAL_DB_KEY = 'farmavida-localdb'
@@ -58,43 +60,9 @@ function translateError(msg) {
   return msg
 }
 
-const addrFromDb = (a) => ({
-  id: a.id, label: a.label, cep: a.cep, endereco: a.endereco, numero: a.numero,
-  complemento: a.complemento || '', bairro: a.bairro, cidade: a.cidade, estado: a.estado,
-  isDefault: !!a.is_default,
-})
-const addrToDb = (a) => ({
-  label: a.label || 'Casa', cep: a.cep, endereco: a.endereco, numero: a.numero,
-  complemento: a.complemento || '', bairro: a.bairro, cidade: a.cidade, estado: a.estado,
-  is_default: !!a.isDefault,
-})
-
 const remote = {
   ...remoteAuth,
-  async listAddresses() {
-    const token = await getToken()
-    const rows = await request('/rest/v1/addresses?select=*&order=created_at.asc', { token })
-    return rows.map(addrFromDb)
-  },
-  async addAddress(address) {
-    const token = await getToken()
-    if (address.isDefault) {
-      await request('/rest/v1/addresses?is_default=eq.true', { method: 'PATCH', token, body: { is_default: false } })
-    }
-    const rows = await request('/rest/v1/addresses', {
-      method: 'POST', token, headers: { Prefer: 'return=representation' }, body: addrToDb(address),
-    })
-    return addrFromDb(rows[0])
-  },
-  async removeAddress(id) {
-    const token = await getToken()
-    await request(`/rest/v1/addresses?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE', token })
-  },
-  async setDefaultAddress(id) {
-    const token = await getToken()
-    await request('/rest/v1/addresses?is_default=eq.true', { method: 'PATCH', token, body: { is_default: false } })
-    await request(`/rest/v1/addresses?id=eq.${encodeURIComponent(id)}`, { method: 'PATCH', token, body: { is_default: true } })
-  },
+  ...remoteAddresses,
   async createOrder(order) {
     const token = await getToken()
     const rows = await request('/rest/v1/orders', {
@@ -125,6 +93,8 @@ const currentLocalUserId = () => readJSON(SESSION_KEY, null)?.userId
 const publicUser = (u) => ({ id: u.id, email: u.email, nome: u.nome, telefone: u.telefone, cpf: u.cpf })
 const localAuthListeners = new Set()
 const notifyLocalAuth = (user, event) => localAuthListeners.forEach((listener) => listener(user, event))
+
+const localAddresses = createLocalAddresses({ loadDb, saveDb, currentLocalUserId, newId })
 
 const local = {
   async signUp({ email, password, nome, telefone, cpf }) {
@@ -170,30 +140,7 @@ const local = {
     const user = id && loadDb().users.find((u) => u.id === id)
     return user ? publicUser(user) : null
   },
-  async listAddresses() {
-    const id = currentLocalUserId()
-    return loadDb().addresses.filter((a) => a.user_id === id).map((a) => ({ ...a, user_id: undefined }))
-  },
-  async addAddress(address) {
-    const db = loadDb()
-    const id = currentLocalUserId()
-    if (address.isDefault) db.addresses.forEach((a) => { if (a.user_id === id) a.isDefault = false })
-    const row = { ...address, id: newId(), user_id: id }
-    db.addresses.push(row)
-    saveDb(db)
-    return { ...row, user_id: undefined }
-  },
-  async removeAddress(addrId) {
-    const db = loadDb()
-    db.addresses = db.addresses.filter((a) => a.id !== addrId)
-    saveDb(db)
-  },
-  async setDefaultAddress(addrId) {
-    const db = loadDb()
-    const id = currentLocalUserId()
-    db.addresses.forEach((a) => { if (a.user_id === id) a.isDefault = a.id === addrId })
-    saveDb(db)
-  },
+  ...localAddresses,
   async createOrder(order) {
     const db = loadDb()
     const row = { ...order, id: newId(), user_id: currentLocalUserId(), created_at: new Date().toISOString() }

@@ -1,39 +1,33 @@
-import "./Benefits.css";
+import './Benefits.css'
 
 function Benefits() {
   const benefits = [
     {
-      icon: "🚚",
-      title: "Entrega Rápida",
-      description:
-        "Receba seus produtos com praticidade e segurança em até 24h nas principais regiões.",
+      icon: '🚚',
+      title: 'Entrega Rápida',
+      description: 'Receba seus produtos com praticidade e segurança em até 24h nas principais regiões.'
     },
     {
-      icon: "🔒",
-      title: "Compra Segura",
-      description:
-        "Seus dados e suas compras protegidos com criptografia de ponta e certificados de segurança.",
+      icon: '🔒',
+      title: 'Compra Segura',
+      description: 'Seus dados e suas compras protegidos com criptografia de ponta e certificados de segurança.'
     },
     {
-      icon: "✅",
-      title: "Produtos de Qualidade",
-      description:
-        "Medicamentos e produtos originais, aprovados pela ANVISA, para sua saúde e família.",
+      icon: '✅',
+      title: 'Produtos de Qualidade',
+      description: 'Medicamentos e produtos originais, aprovados pela ANVISA, para sua saúde e família.'
     },
     {
-      icon: "📄",
-      title: "Envio de Receita",
-      description:
-        "Envie sua receita controlada em PDF de forma simples, segura e com retenção de lote.",
-    },
-  ];
+      icon: '📄',
+      title: 'Envio de Receita',
+      description: 'Envie sua receita controlada em PDF de forma simples, segura e com retenção de lote.'
+    }
+  ]
 
   return (
     <section className="benefits" aria-labelledby="benefits-title">
       <div className="container">
-        <h2 id="benefits-title" className="sr-only">
-          Benefícios FarmaVida
-        </h2>
+        <h2 id="benefits-title" className="sr-only">Benefícios FarmaVida</h2>
         <div className="benefits-grid">
           {benefits.map((benefit, index) => (
             <article key={index} className="benefit-card">
@@ -47,7 +41,7 @@ function Benefits() {
         </div>
       </div>
     </section>
-  );
+  )
 }
 
-export default Benefits;
+export default Benefits

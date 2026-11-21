@@ -99,24 +99,25 @@ export function UserProvider({ children }) {
 
   const addAddress = useCallback(async (address) => {
     const owner = userRef.current?.id
-    const created = await db.addAddress({ ...address, isDefault: address.isDefault || addresses.length === 0 })
+    const created = await db.addAddress(address)
     const list = await db.listAddresses()
     if (alive.current && owner === userRef.current?.id) setAddresses(list)
     return created
-  }, [addresses.length])
+  }, [])
+
+  const updateAddress = useCallback(async (id, address) => {
+    const owner = userRef.current?.id
+    const updated = await db.updateAddress(id, address)
+    const list = await db.listAddresses()
+    if (alive.current && owner === userRef.current?.id) setAddresses(list)
+    return updated
+  }, [])
 
   const removeAddress = useCallback(async (id) => {
     const owner = userRef.current?.id
     await db.removeAddress(id)
     const list = await db.listAddresses()
-    if (!alive.current || owner !== userRef.current?.id) return
-    if (list.length > 0 && !list.some((a) => a.isDefault)) {
-      await db.setDefaultAddress(list[0].id)
-      const updated = await db.listAddresses()
-      if (alive.current && owner === userRef.current?.id) setAddresses(updated)
-    } else {
-      setAddresses(list)
-    }
+    if (alive.current && owner === userRef.current?.id) setAddresses(list)
   }, [])
 
   const setDefaultAddress = useCallback(async (id) => {
@@ -148,13 +149,14 @@ export function UserProvider({ children }) {
     addresses,
     defaultAddress: addresses.find((a) => a.isDefault) || addresses[0] || null,
     addAddress,
+    updateAddress,
     removeAddress,
     setDefaultAddress,
     orders,
     placeOrder,
     authOpen, authTab, setAuthTab, openAuth, closeAuth,
     accountOpen, accountTab, setAccountTab, openAccount, closeAccount,
-  }), [user, loading, authError, dataError, dataLoading, reloadAccountData, register, login, logout, addresses, addAddress, removeAddress, setDefaultAddress,
+  }), [user, loading, authError, dataError, dataLoading, reloadAccountData, register, login, logout, addresses, addAddress, updateAddress, removeAddress, setDefaultAddress,
     orders, placeOrder, authOpen, authTab, openAuth, closeAuth, accountOpen, accountTab, openAccount, closeAccount])
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>
