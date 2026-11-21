@@ -1,6 +1,10 @@
-
-.hero-visual { min-width: 0; padding: 1rem 0; }
-.hero-image-stack { isolation: isolate; }
+.hero-visual {
+  min-width: 0;
+  padding: 1rem 0;
+}
+.hero-image-stack {
+  isolation: isolate;
+}
 .hero-img-overlay {
   right: 1.5%;
   bottom: 3.5%;
@@ -11,14 +15,27 @@
   animation: fv-hero-overlay-drift 6.5s ease-in-out infinite alternate;
   z-index: 2;
 }
-.hero-price-tag { z-index: 3; }
+.hero-price-tag {
+  z-index: 3;
+}
 @keyframes fv-hero-overlay-drift {
-  from { transform: translateY(0) rotate(2deg); }
-  to { transform: translateY(-13px) rotate(-1.5deg); }
+  from {
+    transform: translateY(0) rotate(2deg);
+  }
+  to {
+    transform: translateY(-13px) rotate(-1.5deg);
+  }
 }
 @media (max-width: 768px) {
-  .hero-img-overlay { right: 2%; bottom: 3%; width: 38%; }
+  .hero-img-overlay {
+    right: 2%;
+    bottom: 3%;
+    width: 38%;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-img-overlay { animation: none; transform: rotate(2deg); }
+  .hero-img-overlay {
+    animation: none;
+    transform: rotate(2deg);
+  }
 }
