@@ -3,7 +3,7 @@ import { STORE } from '../../config'
 import { formatBRL } from '../../utils/format'
 import Modal from '../ui/Modal'
 import './CartDrawer.css'
-import { getProductFallback } from '../../utils/productImage.js'
+import { getProductFallback, getLocalProductImage } from '../../utils/productImage.js'
 
 const EMOJI = { medicamentos: '💊', genericos: '🧪', vitaminas: '💪', higiene: '🧴', cuidados: '🩺', ofertas: '🔥' }
 
@@ -74,7 +74,7 @@ export default function CartDrawer({ onCheckout }) {
               <li key={item.id} className="cm-item">
                 <div className="cm-thumb">
                   <span aria-hidden="true">{EMOJI[item.category] || '💊'}</span>
-                  <img src={item.image || getProductFallback(item.category, item.name)} alt="" loading="lazy" onError={(event) => { event.currentTarget.src = getProductFallback(item.category, item.name) }} />
+                  <img src={item.image || getProductFallback(item.category, item.name)} alt="" loading="lazy" onError={(event) => { event.currentTarget.src = event.currentTarget.dataset.fallbackApplied === 'true' ? getProductFallback(item.category, item.name) : (getLocalProductImage(item) || getProductFallback(item.category, item.name)); event.currentTarget.dataset.fallbackApplied = 'true' }} />
                 </div>
 
                 <div className="cm-info">

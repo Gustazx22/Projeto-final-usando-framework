@@ -32,8 +32,9 @@ function Hero() {
         <div className="hero-visual" aria-hidden="true">
           <div className="hero-image-stack">
             <img
-              src="https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=800&q=80"
-              alt="FarmaVida - Farmácia virtual"
+              src="https://images.unsplash.com/photo-1580281657527-47f249e8f4df?auto=format&fit=crop&w=1100&q=85"
+              onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=800&q=80' }}
+              alt="Farmacêutica em ambiente de farmácia"
               className="hero-img-main"
               loading="eager"
             />

@@ -44,7 +44,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
         id: product.id,
         name: product.name,
         price: product.price,
-        image: product.image,
+        image: getProductImageSrc(product),
         category: product.category,
         requiresPrescription: product.requiresPrescription === true,
       })
@@ -53,7 +53,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
           id: product.id,
           name: product.name,
           price: product.price,
-          image: product.image,
+          image: getProductImageSrc(product),
           category: product.category,
           requiresPrescription: product.requiresPrescription === true,
         })

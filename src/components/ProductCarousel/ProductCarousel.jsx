@@ -3,6 +3,7 @@ import { useCart } from '../../context/useCart.js'
 import { useToast } from '../../context/useToast.js'
 import QuickViewModal from '../QuickViewModal/QuickViewModal'
 import { getProductImageSrc, handleProductImageError } from '../../utils/productImage.js'
+import { carouselMetrics, clampCarouselOffset } from '../../utils/carouselMetrics.js'
 import './ProductCarousel.css'
 
 export default function ProductCarousel({ id, title, products, showViewAll = false, viewAllHref = '#', onViewAll }) {
@@ -12,46 +13,62 @@ export default function ProductCarousel({ id, title, products, showViewAll = fal
   const { addItem, openCart } = useCart()
   const { showToast } = useToast()
 
-  const itemsPerView = 4
-  const maxIndex = Math.max(0, products.length - itemsPerView)
-
-  const scrollLeft = () => {
-    if (carouselRef.current) {
-      const cardWidth = carouselRef.current.querySelector('.product-card')?.offsetWidth || 280
-      const gap = 20
-      carouselRef.current.scrollBy({ left: -(cardWidth + gap), behavior: 'smooth' })
-    }
-  }
-
-  const scrollRight = () => {
-    if (carouselRef.current) {
-      const cardWidth = carouselRef.current.querySelector('.product-card')?.offsetWidth || 280
-      const gap = 20
-      carouselRef.current.scrollBy({ left: cardWidth + gap, behavior: 'smooth' })
-    }
-  }
+  const [metrics, setMetrics] = useState({ step: 1, maxIndex: 0, maxScroll: 0 })
 
   useEffect(() => {
-    const carousel = carouselRef.current
-    if (!carousel) return
+    const track = carouselRef.current
+    if (!track) return undefined
 
-    const handleScroll = () => {
-      const cardWidth = carousel.querySelector('.product-card')?.offsetWidth || 280
-      const gap = 20
-      const index = Math.round(carousel.scrollLeft / (cardWidth + gap))
-      setCurrentIndex(Math.max(0, Math.min(index, maxIndex)))
+    const update = () => {
+      const first = track.querySelector('.product-card')
+      if (!first) {
+        setMetrics({ step: 1, maxIndex: 0, maxScroll: 0 })
+        setCurrentIndex(0)
+        return
+      }
+      const gap = Number.parseFloat(window.getComputedStyle(track).columnGap) || 0
+      const next = carouselMetrics({
+        scrollWidth: track.scrollWidth,
+        clientWidth: track.clientWidth,
+        cardWidth: first.getBoundingClientRect().width,
+        gap,
+      })
+      setMetrics(next)
+      setCurrentIndex(Math.min(next.maxIndex, Math.round(track.scrollLeft / next.step)))
     }
 
-    carousel.addEventListener('scroll', handleScroll, { passive: true })
-    return () => carousel.removeEventListener('scroll', handleScroll)
-  }, [maxIndex])
+    update()
+    track.addEventListener('scroll', update, { passive: true })
+    // ResizeObserver mantém as setas corretas quando muda o número de cards visíveis.
+    const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null
+    observer?.observe(track)
+    window.addEventListener('resize', update)
+    return () => {
+      track.removeEventListener('scroll', update)
+      observer?.disconnect()
+      window.removeEventListener('resize', update)
+    }
+  }, [products.length])
+
+  const goToIndex = (index) => {
+    const track = carouselRef.current
+    if (!track) return
+    const target = clampCarouselOffset(index * metrics.step, metrics.maxScroll)
+    track.scrollTo({ left: target, behavior: 'smooth' })
+  }
+
+  const scrollLeft = () => goToIndex(currentIndex - 1)
+  const scrollRight = () => goToIndex(currentIndex + 1)
+
+  const canScrollLeft = currentIndex > 0
+  const canScrollRight = currentIndex < metrics.maxIndex
 
   const handleAddToCart = (product) => {
     addItem({
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.image,
+      image: getProductImageSrc(product),
       category: product.category,
       requiresPrescription: product.requiresPrescription === true,
     })
@@ -79,9 +96,6 @@ export default function ProductCarousel({ id, title, products, showViewAll = fal
       if (error?.name !== 'AbortError') showToast('Não foi possível compartilhar.', 'error')
     }
   }
-
-  const canScrollLeft = currentIndex > 0
-  const canScrollRight = currentIndex < maxIndex
 
   return (
     <>
@@ -198,19 +212,13 @@ export default function ProductCarousel({ id, title, products, showViewAll = fal
             </button>
           </div>
 
-          {products.length > itemsPerView && (
+          {metrics.maxIndex > 0 && (
             <div className="carousel-indicators" aria-label="Posição do carrossel">
-              {Array.from({ length: maxIndex + 1 }, (_, i) => (
+              {Array.from({ length: metrics.maxIndex + 1 }, (_, i) => (
                 <button
                   key={i}
                   className={`carousel-indicator ${i === currentIndex ? 'active' : ''}`}
-                  onClick={() => {
-                    if (carouselRef.current) {
-                      const cardWidth = carouselRef.current.querySelector('.product-card')?.offsetWidth || 280
-                      const gap = 20
-                      carouselRef.current.scrollTo({ left: i * (cardWidth + gap), behavior: 'smooth' })
-                    }
-                  }}
+                  onClick={() => goToIndex(i)}
                   aria-label={`Ir para grupo ${i + 1}`}
                   aria-current={i === currentIndex ? 'true' : 'false'}
                 />

@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import './styles/farmavida-brand.css'
 
 // Evita que o navegador restaure uma posição antiga enquanto o catálogo
 // ainda está carregando. Links com âncora (#receita, #medicamentos) continuam funcionando.

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="760" viewBox="0 0 600 760">
+    <defs><linearGradient id="bg" x1=".05" y1="0" x2=".92" y2="1"><stop stop-color="#F7E5F1"/><stop offset="1" stop-color="#fff"/></linearGradient><filter id="shadow" x="-.2" y="-.2" width="1.4" height="1.4"><feDropShadow dx="0" dy="17" stdDeviation="12" flood-color="#486e5c" flood-opacity=".18"/></filter></defs>
+    <rect width="600" height="760" fill="url(#bg)"/>
+    <circle cx="472" cy="117" r="181" fill="#469F91" opacity=".07"/>
+    <path d="M453 120 L498 166 M498 120 L453 166" stroke="white" stroke-width="6" opacity=".3"/>
+    <circle cx="122" cy="460" r="190" fill="#469F91" opacity=".06"/>
+    
+    <g filter="url(#shadow)"><rect x="108" y="263" width="184" height="217" rx="21" fill="white" stroke="#469F91" stroke-width="4"/>
+      <rect x="125" y="310" width="150" height="104" rx="9" fill="#469F91" opacity=".85"/>
+      <rect x="299" y="203" width="160" height="281" rx="43" fill="#fff" stroke="#c8d4cb" stroke-width="4"/>
+      <rect x="320" y="180" width="118" height="48" rx="13" fill="#469F91"/>
+      <rect x="314" y="305" width="130" height="108" rx="9" fill="#469F91" opacity=".77"/></g>
+    <g stroke="white" stroke-width="11" stroke-linecap="round"><path d="M201 340 L201 383 M178 362 L224 362"/><path d="M350 360 L410 360"/></g>
+  
+    <rect x="63" y="515" width="474" height="160" rx="26" fill="#fff" opacity=".94"/>
+    <text x="300" y="554" fill="#234339" font-family="Arial, sans-serif" font-size="27" font-weight="700" text-anchor="middle">Protetor Solar +</text><text x="300" y="592" fill="#234339" font-family="Arial, sans-serif" font-size="27" font-weight="700" text-anchor="middle">Pós-sol</text>
+    <text x="300" y="666" fill="#469F91" font-family="Arial, sans-serif" font-size="17" letter-spacing="2" text-anchor="middle">FARMAVIDA</text>
+    </svg>

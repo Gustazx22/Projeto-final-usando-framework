@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="760" viewBox="0 0 600 760">
+    <defs><linearGradient id="bg" x1=".05" y1="0" x2=".92" y2="1"><stop stop-color="#E4EAFB"/><stop offset="1" stop-color="#fff"/></linearGradient><filter id="shadow" x="-.2" y="-.2" width="1.4" height="1.4"><feDropShadow dx="0" dy="17" stdDeviation="12" flood-color="#486e5c" flood-opacity=".18"/></filter></defs>
+    <rect width="600" height="760" fill="url(#bg)"/>
+    <circle cx="472" cy="117" r="181" fill="#9261B2" opacity=".07"/>
+    <path d="M453 120 L498 166 M498 120 L453 166" stroke="white" stroke-width="6" opacity=".3"/>
+    <circle cx="122" cy="460" r="190" fill="#9261B2" opacity=".06"/>
+    
+      <g filter="url(#shadow)"><path d="M170 160 L395 145 Q423 145 430 176 L445 445 Q447 462 427 469 L177 484 Q155 486 151 462 L146 186 Q144 169 170 160 Z" fill="#fff" stroke="#bfd3cb" stroke-width="3"/>
+      <path d="M148 195 L432 177 L436 252 L151 270 Z" fill="#9261B2"/>
+      <rect x="179" y="300" width="226" height="9" rx="5" fill="#9261B2" opacity=".30"/>
+      <rect x="180" y="321" width="167" height="9" rx="5" fill="#9261B2" opacity=".16"/>
+      <rect x="185" y="376" width="180" height="65" rx="12" fill="#f5faf8"/></g>
+      <g transform="translate(216 389)"><ellipse cx="0" cy="20" rx="13" ry="18" fill="#9261B2" stroke="#9261B2" stroke-opacity=".4" stroke-width="2"/><ellipse cx="40" cy="20" rx="13" ry="18" fill="#f0e9e1" stroke="#9261B2" stroke-opacity=".4" stroke-width="2"/><ellipse cx="80" cy="20" rx="13" ry="18" fill="#B6D8CB" stroke="#9261B2" stroke-opacity=".4" stroke-width="2"/><ellipse cx="120" cy="20" rx="13" ry="18" fill="#9261B2" stroke="#9261B2" stroke-opacity=".4" stroke-width="2"/></g>
+      <path d="M337 180 C357 210 387 235 418 244" fill="none" stroke="#fff" stroke-width="12" opacity=".45"/>
+    
+    <rect x="63" y="515" width="474" height="118" rx="26" fill="#fff" opacity=".94"/>
+    <text x="300" y="554" fill="#234339" font-family="Arial, sans-serif" font-size="29" font-weight="700" text-anchor="middle">Metformina 850mg</text>
+    <text x="300" y="623" fill="#9261B2" font-family="Arial, sans-serif" font-size="17" letter-spacing="2" text-anchor="middle">FARMAVIDA</text>
+    </svg>

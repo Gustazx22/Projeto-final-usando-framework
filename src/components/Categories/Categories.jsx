@@ -39,6 +39,16 @@ function Categories() {
     return () => window.removeEventListener('farmavida:navigate-category', showSections)
   }, [])
 
+  // A pesquisa do cabeçalho utiliza o mesmo catálogo já carregado na página.
+  useEffect(() => {
+    const handleHeaderSearch = (event) => {
+      setQuery(String(event.detail?.query || ''))
+      setSelectedCategory('all')
+    }
+    window.addEventListener('farmavida:search-products', handleHeaderSearch)
+    return () => window.removeEventListener('farmavida:search-products', handleHeaderSearch)
+  }, [])
+
   const filteredCategories = useMemo(
     () => filterCatalog(categories, { query, categoryId: selectedCategory }),
     [categories, query, selectedCategory],

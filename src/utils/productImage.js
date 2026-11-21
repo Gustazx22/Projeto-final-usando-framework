@@ -40,12 +40,27 @@ export function getProductFallback(category = '', name = 'Produto FarmaVida') {
 }
 
 export function getProductImageSrc(product) {
-  return product?.image || getProductFallback(product?.category, product?.name)
+  const local = getLocalProductImage(product)
+  // A versão antiga do catálogo usa a mesma foto por categoria. Nesses casos,
+  // preferimos a imagem exclusiva local até a atualização SQL ser executada.
+  if (local && (!product?.image || /images\.unsplash\.com\/photo-(1584308666744|1550572017|1576671081837|1556228578)/.test(product.image))) {
+    return local
+  }
+  return product?.image || local || getProductFallback(product?.category, product?.name)
+}
+
+export function getLocalProductImage(product) {
+  if (product?.category === 'higiene') return product?.image || null
+  const id = Number(product?.id)
+  return Number.isInteger(id) && id > 0 && id <= 36 ? `/products/catalogo/${id}.svg` : null
 }
 
 export function handleProductImageError(event, product) {
-  const fallback = getProductFallback(product?.category, product?.name)
-  if (event.currentTarget.dataset.fallbackApplied === 'true') return
+  const fallback = getLocalProductImage(product) || getProductFallback(product?.category, product?.name)
+  if (event.currentTarget.dataset.fallbackApplied === 'true') {
+    event.currentTarget.src = getProductFallback(product?.category, product?.name)
+    return
+  }
   event.currentTarget.dataset.fallbackApplied = 'true'
   event.currentTarget.src = fallback
 }

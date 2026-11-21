@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="760" viewBox="0 0 600 760">
+    <defs><linearGradient id="bg" x1=".05" y1="0" x2=".92" y2="1"><stop stop-color="#DDF4EA"/><stop offset="1" stop-color="#fff"/></linearGradient><filter id="shadow" x="-.2" y="-.2" width="1.4" height="1.4"><feDropShadow dx="0" dy="17" stdDeviation="12" flood-color="#486e5c" flood-opacity=".18"/></filter></defs>
+    <rect width="600" height="760" fill="url(#bg)"/>
+    <circle cx="472" cy="117" r="181" fill="#885BB0" opacity=".07"/>
+    <path d="M453 120 L498 166 M498 120 L453 166" stroke="white" stroke-width="6" opacity=".3"/>
+    <circle cx="122" cy="460" r="190" fill="#885BB0" opacity=".06"/>
+    <g filter="url(#shadow)"><rect x="171" y="188" width="260" height="245" rx="46" fill="#fff" stroke="#885BB0" stroke-width="7"/><rect x="202" y="221" width="198" height="125" rx="16" fill="#d9f2ef"/><text x="300" y="296" text-anchor="middle" font-size="52" font-weight="800" fill="#885BB0">108</text><circle cx="301" cy="381" r="22" fill="#885BB0"/></g>
+    <rect x="63" y="515" width="474" height="118" rx="26" fill="#fff" opacity=".94"/>
+    <text x="300" y="554" fill="#234339" font-family="Arial, sans-serif" font-size="29" font-weight="700" text-anchor="middle">Glicosímetro + Tiras</text>
+    <text x="300" y="623" fill="#885BB0" font-family="Arial, sans-serif" font-size="17" letter-spacing="2" text-anchor="middle">FARMAVIDA</text>
+    </svg>
