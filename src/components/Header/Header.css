@@ -21,3 +21,40 @@
   border-radius: 50%; background: var(--color-primary, #007b5e); color: #fff; font-size: 0.8rem; font-weight: 800;
 }
 @media (max-width: 900px) { .hd-login span, .hd-user-name { display: none; } .hd-login, .hd-user { padding: 0.5rem; } }
+
+/* O menu móvel renderizado pelo React tem a classe .menu (não .main-nav). */
+.site-header .menu { display: none; }
+@media (max-width: 1024px) {
+  .site-header .menu {
+    display: flex;
+    flex-direction: column;
+    max-height: min(65vh, 420px);
+    overflow-y: auto;
+    background: var(--color-surface);
+    padding: .75rem max(1rem, calc((100vw - 1200px)/2));
+    border-top: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+  }
+  .site-header .menu a {
+    display: flex;
+    gap: .8rem;
+    align-items: center;
+    min-height: 44px;
+    padding: .65rem .85rem;
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+  }
+  .site-header .menu a:hover, .site-header .menu a:focus-visible,
+  .site-header .menu a[aria-current="location"] {
+    background: var(--color-primary-bg);
+    color: var(--color-primary);
+  }
+}
+
+.header-receipt-link { background: var(--color-primary); }
+.header-receipt-link:hover { background: var(--color-primary-dark); box-shadow: var(--shadow-sm); }
+
+/* Alterna de volta à área farmacêutica sem trocar de conta. */
+.hd-workspace-switch { border: 1px solid #b8e5d3; padding: .58rem .85rem; background: #e6f4ee; color: #00634b; border-radius: 999px; font-weight: 700; white-space: nowrap; }
+.hd-workspace-switch:hover, .hd-workspace-switch:focus-visible { background: #d6f1e3; outline-offset: 2px; }
+@media (max-width: 1120px) { .hd-workspace-label { display: none; } .hd-workspace-switch { padding: .55rem .7rem; } }

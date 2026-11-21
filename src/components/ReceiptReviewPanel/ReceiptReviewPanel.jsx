@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useToast } from '../../context/ToastContext'
+import { useToast } from '../../context/useToast.js'
 import './ReceiptReviewPanel.css'
 
 const STATUS = {

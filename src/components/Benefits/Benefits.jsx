@@ -4,8 +4,8 @@ function Benefits() {
   const benefits = [
     {
       icon: '🚚',
-      title: 'Entrega Rápida',
-      description: 'Receba seus produtos com praticidade e segurança em até 24h nas principais regiões.'
+      title: 'Checkout Simulado',
+      description: 'Experimente a montagem do carrinho e o registro de pedidos, sem entrega ou cobrança real.'
     },
     {
       icon: '🔒',

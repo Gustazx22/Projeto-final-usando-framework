@@ -1,2 +1,28 @@
-/* QuickViewModal styles - using design system variables from index.css */
-/* All styles are now in the global index.css design system */
+/* A visualização rápida usa uma janela real e não as regras [open] do modal legado. */
+.quick-view-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  visibility: visible;
+  opacity: 1;
+  background: rgba(15,30,25,.65);
+}
+.quick-view-dialog {
+  position: relative;
+  width: min(100%, 900px);
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xl);
+}
+@media (max-width: 720px) {
+  .quick-view-dialog { max-height: 94vh; }
+  .quick-view-grid { grid-template-columns: 1fr; min-height: 0; }
+  .quick-view-image { height: 220px; }
+  .quick-view-info { padding: 1.25rem; }
+}

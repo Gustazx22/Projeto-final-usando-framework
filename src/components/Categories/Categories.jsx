@@ -67,7 +67,7 @@ function Categories() {
       <div className="container">
         <div className="section-header">
           <h2 id="categories-title" className="section-title">Nossos Produtos</h2>
-          <p className="section-subtitle">Qualidade farmacêutica, preço de outlet — navegue por categoria</p>
+          <p className="section-subtitle">Explore nosso catálogo demonstrativo e encontre produtos por nome ou categoria.</p>
         </div>
 
         <div id="catalog-controls" className="catalog-controls">

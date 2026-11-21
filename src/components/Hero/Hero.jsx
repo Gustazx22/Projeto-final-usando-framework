@@ -7,7 +7,7 @@ function Hero() {
         <div className="hero-content">
           <div className="hero-badge">
             <span className="badge-dot" aria-hidden="true"></span>
-            <span>ENTREGA RÁPIDA EM TODO BRASIL</span>
+            <span>PROJETO ACADÊMICO · AMBIENTE DE DEMONSTRAÇÃO</span>
           </div>
           <h1 id="hero-title">Sua saúde em <span className="highlight">boas mãos</span></h1>
           <p className="hero-subtitle">
@@ -15,21 +15,21 @@ function Hero() {
             envie PDFs de teste para análise farmacêutica manual. Não há dispensação ou pagamento real.
           </p>
           <div className="hero-actions">
-            <a href="#medicamentos" className="btn btn-primary btn-lg">Comprar agora <span aria-hidden="true">→</span></a>
+            <a href="#catalog-controls" className="btn btn-primary btn-lg">Comprar agora <span aria-hidden="true">→</span></a>
             <a href="#receita" className="btn btn-secondary btn-lg">Enviar receita <span aria-hidden="true">→</span></a>
           </div>
           <div className="hero-stats">
             <div className="stat">
-              <strong>10k+</strong>
-              <span>produtos</span>
+              <strong>Catálogo</strong>
+              <span>demonstrativo</span>
             </div>
             <div className="stat">
-              <strong>24h</strong>
-              <span>entrega expressa</span>
+              <strong>Pedidos</strong>
+              <span>simulados</span>
             </div>
             <div className="stat">
-              <strong>5★</strong>
-              <span>avaliações</span>
+              <strong>Receitas</strong>
+              <span>análise manual</span>
             </div>
           </div>
         </div>
@@ -48,8 +48,8 @@ function Hero() {
               loading="lazy"
             />
             <div className="hero-price-tag">
-              <span className="price-label">A partir de</span>
-              <span className="price-value">R$ <strong>5</strong>,90</span>
+              <span className="price-label">FarmaVida</span>
+              <span className="price-value">Projeto <strong>demo</strong></span>
             </div>
           </div>
         </div>

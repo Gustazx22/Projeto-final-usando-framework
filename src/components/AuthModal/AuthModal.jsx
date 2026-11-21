@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
-import { useUser } from '../../context/UserContext'
-import { useToast } from '../../context/ToastContext'
+import { useUser } from '../../context/useUser.js'
+import { useToast } from '../../context/useToast.js'
 import { isRemote } from '../../services/db'
 import { isEmail, isValidCPF, maskCPF, maskPhone } from '../../utils/format'
 import Modal from '../ui/Modal'
@@ -108,9 +108,9 @@ export default function AuthModal() {
         </div>
       ) : (
         <>
-          <div className="fv-tabs" role="tablist">
-            <button type="button" role="tab" disabled={busy || loading} aria-selected={isLogin} className={`fv-tab ${isLogin ? 'active' : ''}`} onClick={() => switchTab('login')}>Entrar</button>
-            <button type="button" role="tab" disabled={busy || loading} aria-selected={!isLogin} className={`fv-tab ${!isLogin ? 'active' : ''}`} onClick={() => switchTab('register')}>Criar conta</button>
+          <div className="fv-tabs" role="group" aria-label="Acesso à conta">
+            <button type="button" disabled={busy || loading} aria-pressed={isLogin} className={`fv-tab ${isLogin ? 'active' : ''}`} onClick={() => switchTab('login')}>Entrar</button>
+            <button type="button" disabled={busy || loading} aria-pressed={!isLogin} className={`fv-tab ${!isLogin ? 'active' : ''}`} onClick={() => switchTab('register')}>Criar conta</button>
           </div>
 
           <form className="fv-form" onSubmit={submit} noValidate>

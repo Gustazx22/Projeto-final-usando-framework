@@ -14,6 +14,7 @@ import { createRemoteAddresses, createLocalAddresses } from './addresses.js'
 import { createRemoteCatalog, createLocalCatalog } from './catalog.js'
 import { createRemoteOrders, createLocalOrders } from './orders.js'
 import { createRemoteReceipts, createLocalReceipts } from './receipts.js'
+import { createPharmacistDashboard } from './pharmacistDashboard.js'
 
 export { isRemote } from './supabase.js'
 
@@ -38,6 +39,7 @@ const remote = {
   ...remoteAddresses,
   ...createRemoteOrders(supabase, { getToken }),
   ...createRemoteReceipts(supabase, { getToken }),
+  ...createPharmacistDashboard(supabase),
 }
 
 /* ====================== Modo demonstração (localStorage) ====================== */
@@ -122,6 +124,7 @@ const local = {
   ...localAddresses,
   ...createLocalOrders({ loadDb, saveDb, currentLocalUserId, newId }),
   ...createLocalReceipts(),
+  async getPharmacistDashboard() { throw new Error('O painel requer Supabase e perfil farmacêutico autorizado.') },
 }
 
 export const db = isRemote ? remote : local

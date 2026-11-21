@@ -1,30 +1,38 @@
-import { useCart } from '../../context/CartContext'
-import { useEffect, useState } from 'react'
+import { useCart } from '../../context/useCart.js'
+import { useEffect, useRef, useState } from 'react'
 import './QuickViewModal.css'
 
 export default function QuickViewModal({ product, isOpen, onClose }) {
   const { addItem } = useCart()
   const [selectedQty, setSelectedQty] = useState(1)
+  const dialogRef = useRef(null)
+  const closeRef = useRef(null)
+  const closeLatest = useRef(onClose)
+  useEffect(() => { closeLatest.current = onClose }, [onClose])
 
   useEffect(() => {
-      if (isOpen) {
-        setSelectedQty(1)
-        document.body.style.overflow = 'hidden'
-      }
-      return () => {
-        document.body.style.overflow = ''
-      }
-    }, [isOpen])
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose()
+    if (!isOpen) return
+    const previousFocus = document.activeElement
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    closeRef.current?.focus({ preventScroll: true })
+    const onKey = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); closeLatest.current?.(); return }
+      if (event.key !== 'Tab') return
+      const focusable = [...(dialogRef.current?.querySelectorAll('button:not([disabled]),input:not([disabled]),a[href]') ?? [])]
+      if (!focusable.length) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
     }
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = previousOverflow
+      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true })
     }
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
+  }, [isOpen])
 
   if (!product || !isOpen) return null
 
@@ -37,7 +45,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
         price: product.price,
         image: product.image,
         category: product.category,
-      requiresPrescription: product.requiresPrescription === true,
+        requiresPrescription: product.requiresPrescription === true,
       })
       for (let i = 1; i < selectedQty; i++) {
         addItem({
@@ -46,17 +54,16 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
           price: product.price,
           image: product.image,
           category: product.category,
-      requiresPrescription: product.requiresPrescription === true,
+          requiresPrescription: product.requiresPrescription === true,
         })
       }
       onClose()
     }
 
     return (
-      <>
-        {isOpen && <div className="modal-overlay" onClick={onClose} aria-hidden="true"></div>}
-        <div className="modal quick-view-modal" role="dialog" aria-modal="true" aria-labelledby="quick-view-title">
-        <button className="modal-close" onClick={onClose} aria-label="Fechar visualização rápida">
+      <div className="modal quick-view-modal" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
+        <div ref={dialogRef} className="quick-view-dialog" role="dialog" aria-modal="true" aria-labelledby="quick-view-title">
+        <button ref={closeRef} type="button" className="modal-close" onClick={onClose} aria-label="Fechar visualização rápida">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
@@ -104,7 +111,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
                     id="qty-selector"
                     type="number"
                     value={selectedQty}
-                    onChange={(e) => setSelectedQty(Math.max(1, parseInt(e.target.value) || 1))}
+                    onChange={(e) => setSelectedQty(Math.min(99, Math.max(1, parseInt(e.target.value, 10) || 1)))}
                     min="1"
                     max="99"
                     className="qty-input"
@@ -112,7 +119,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
                   />
                   <button
                     className="qty-btn-large"
-                    onClick={() => setSelectedQty(prev => prev + 1)}
+                    onClick={() => setSelectedQty(prev => Math.min(99, prev + 1))} disabled={selectedQty >= 99}
                     aria-label="Aumentar quantidade"
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -143,25 +150,25 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
                     <path d="M5 12h14" />
                     <path d="M12 5l7 7-7 7" />
                   </svg>
-                  <span>Entrega rápida disponível</span>
+                  <span>Entrega apenas simulada</span>
                 </div>
                 <div className="meta-item">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
-                  <span>Compra segura</span>
+                  <span>Pedido demonstrativo</span>
                 </div>
                 <div className="meta-item">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                   </svg>
-                  <span>Favoritar produto</span>
+                  <span>Informações ilustrativas</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </>
   )
 }

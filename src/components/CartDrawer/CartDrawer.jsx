@@ -1,4 +1,4 @@
-import { useCart } from '../../context/CartContext'
+import { useCart } from '../../context/useCart.js'
 import { STORE } from '../../config'
 import { formatBRL } from '../../utils/format'
 import Modal from '../ui/Modal'

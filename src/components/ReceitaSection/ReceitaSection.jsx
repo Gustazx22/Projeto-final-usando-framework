@@ -1,9 +1,7 @@
 import ReceiptUpload from '../ReceiptUpload/ReceiptUpload'
-import { STORE } from '../../config'
 import './ReceitaSection.css'
 
 export default function ReceitaSection({ receipt, onReceiptChange }) {
-  const wa = `https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent('Olá! Gostaria de enviar uma receita para cotação.')}`
   return (
     <section id="receita" className="receita-section" aria-labelledby="receita-title">
       <div className="container receita-grid">
@@ -20,7 +18,7 @@ export default function ReceitaSection({ receipt, onReceiptChange }) {
             <li>✔ O PDF será enviado ao concluir um pedido</li>
           </ul>
           <p className="fv-hint">Projeto acadêmico: use somente receitas fictícias para testes. Não envie receitas reais com dados pessoais.</p>
-          <a className="btn btn-outline" href={wa} target="_blank" rel="noopener noreferrer">Falar com um farmacêutico</a>
+          <p className="fv-hint">A revisão é feita por um perfil autorizado dentro da simulação, sem atendimento farmacêutico real.</p>
         </div>
         <div className="receita-upload">
           <ReceiptUpload onReceiptChange={onReceiptChange} currentReceipt={receipt} />

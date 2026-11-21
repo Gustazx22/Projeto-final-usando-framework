@@ -3112,3 +3112,13 @@ p { margin-bottom: var(--space-4); line-height: 1.7; }
   .product-card { break-inside: avoid; page-break-inside: avoid; }
   body { background: white; color: black; }
 }
+
+/* Etapa 9: navegação por teclado e âncoras do cabeçalho fixo */
+#main-content, #catalog-controls, #receita, .product-carousel-section { scroll-margin-top: calc(var(--header-height, 80px) + 16px); }
+.fv-modal:focus { outline: none; }
+@media (prefers-reduced-motion: reduce) {
+  .catalog-shimmer { animation: none !important; }
+}
+
+/* Aguarda a resolução das permissões para não mostrar a loja antes do painel. */
+.fv-role-loading { display: grid; place-items: center; min-height: 75vh; padding: 2rem; color: #537869; font-weight: 700; background: #f5faf7; text-align: center; }

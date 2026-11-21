@@ -1,7 +1,7 @@
-import { createContext, useContext, useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import { UserContext } from './contexts.js'
 import { db } from '../services/db'
 
-const UserContext = createContext(undefined)
 
 export function UserProvider({ children }) {
   const [user, setUser] = useState(null)
@@ -11,6 +11,7 @@ export function UserProvider({ children }) {
   const [receiptEvents, setReceiptEvents] = useState([])
   const [reviewQueue, setReviewQueue] = useState([])
   const [isPharmacist, setIsPharmacist] = useState(false)
+  const [roleLoaded, setRoleLoaded] = useState(false)
   const [loading, setLoading] = useState(true)
   const [authError, setAuthError] = useState('')
   const [dataError, setDataError] = useState('')
@@ -45,6 +46,7 @@ export function UserProvider({ children }) {
     setReceipts(docs.status === 'fulfilled' ? docs.value : [])
     setReceiptEvents(events.status === 'fulfilled' ? events.value : [])
     setIsPharmacist(pharmacist.status === 'fulfilled' && pharmacist.value === true)
+    setRoleLoaded(true)
     setReviewQueue(queue.status === 'fulfilled' ? queue.value : [])
     if ([addr, ord, docs, events, pharmacist, queue].some((result) => result.status === 'rejected')) {
       setDataError('Sua conta está conectada, mas alguns dados não carregaram. Confira o SQL das etapas 5–7 e tente novamente.')
@@ -67,6 +69,7 @@ export function UserProvider({ children }) {
       setReceiptEvents([])
       setReviewQueue([])
       setIsPharmacist(false)
+      setRoleLoaded(false)
       setDataError('')
       setDataLoading(Boolean(nextUser))
       if (!nextUser) setAccountOpen(false)
@@ -184,18 +187,13 @@ export function UserProvider({ children }) {
     updateAddress,
     removeAddress,
     setDefaultAddress,
-    orders, receipts, receiptEvents, reviewQueue, isPharmacist, reviewReceipt, getReceiptUrl,
+    orders, receipts, receiptEvents, reviewQueue, isPharmacist, roleLoaded, reviewReceipt, getReceiptUrl,
     placeOrder,
     authOpen, authTab, setAuthTab, openAuth, closeAuth,
     accountOpen, accountTab, setAccountTab, openAccount, closeAccount,
   }), [user, loading, authError, dataError, dataLoading, reloadAccountData, register, login, logout, changePassword, requestPasswordReauth, addresses, addAddress, updateAddress, removeAddress, setDefaultAddress,
-    orders, receipts, receiptEvents, reviewQueue, isPharmacist, reviewReceipt, getReceiptUrl, placeOrder, authOpen, authTab, openAuth, closeAuth, accountOpen, accountTab, openAccount, closeAccount])
+    orders, receipts, receiptEvents, reviewQueue, isPharmacist, roleLoaded, reviewReceipt, getReceiptUrl, placeOrder, authOpen, authTab, openAuth, closeAuth, accountOpen, accountTab, openAccount, closeAccount])
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>
 }
 
-export function useUser() {
-  const context = useContext(UserContext)
-  if (!context) throw new Error('useUser deve ser usado dentro de um UserProvider')
-  return context
-}

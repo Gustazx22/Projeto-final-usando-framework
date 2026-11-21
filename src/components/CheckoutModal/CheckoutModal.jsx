@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
-import { useCart } from '../../context/CartContext'
-import { useToast } from '../../context/ToastContext'
-import { useUser } from '../../context/UserContext'
+import { useCart } from '../../context/useCart.js'
+import { useToast } from '../../context/useToast.js'
+import { useUser } from '../../context/useUser.js'
 import { STORE } from '../../config'
 import {
   formatBRL, maskCard, maskExpiry, cardBrand, isValidCardNumber, isValidExpiry, buildPixPayload,

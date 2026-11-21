@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useUser } from '../../context/UserContext'
-import { useToast } from '../../context/ToastContext'
+import { useUser } from '../../context/useUser.js'
+import { useToast } from '../../context/useToast.js'
 
 const EMPTY = { currentPassword: '', newPassword: '', confirmPassword: '', nonce: '' }
 

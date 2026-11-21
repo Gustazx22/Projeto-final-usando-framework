@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { useCart } from '../../context/CartContext'
-import { useToast } from '../../context/ToastContext'
+import { useCart } from '../../context/useCart.js'
+import { useToast } from '../../context/useToast.js'
 import QuickViewModal from '../QuickViewModal/QuickViewModal'
 import './ProductCarousel.css'
 
@@ -45,8 +45,6 @@ export default function ProductCarousel({ id, title, products, showViewAll = fal
     return () => carousel.removeEventListener('scroll', handleScroll)
   }, [maxIndex])
 
-  const formatPrice = (price) => `R$ ${price.toFixed(2).replace('.', ',')}`
-
   const handleAddToCart = (product) => {
     addItem({
       id: product.id,
@@ -64,16 +62,20 @@ export default function ProductCarousel({ id, title, products, showViewAll = fal
     setQuickViewProduct(product)
   }
 
-  const handleShare = (product) => {
-    if (navigator.share) {
-      navigator.share({
-        title: product.name,
-        text: product.description,
-        url: window.location.href,
-      })
-    } else {
-      navigator.clipboard.writeText(window.location.href)
-      showToast('Link copiado!', 'info')
+  const handleShare = async (product) => {
+    try {
+      const url = `${window.location.origin}${window.location.pathname}#${id}`
+      if (navigator.share) {
+        await navigator.share({ title: product.name, text: product.description, url })
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url)
+        showToast('Link da categoria copiado!', 'info')
+      } else {
+        showToast('Compartilhamento não disponível neste navegador.', 'info')
+      }
+    } catch (error) {
+      // O cancelamento do diálogo de compartilhamento é uma escolha do usuário.
+      if (error?.name !== 'AbortError') showToast('Não foi possível compartilhar.', 'error')
     }
   }
 
@@ -103,8 +105,7 @@ export default function ProductCarousel({ id, title, products, showViewAll = fal
               onClick={scrollLeft}
               disabled={!canScrollLeft}
               aria-label="Produtos anteriores"
-              aria-hidden={!canScrollLeft}
-            >
+                          >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <path d="M15 18l-6-6 6-6" />
               </svg>
@@ -118,8 +119,9 @@ export default function ProductCarousel({ id, title, products, showViewAll = fal
                       src={product.image}
                       alt={product.name}
                       loading="lazy"
-                      onClick={() => handleQuickView(product)}
-                    />
+                      />
+                    <button type="button" className="product-image-open" onClick={() => handleQuickView(product)}
+                      aria-label={`Ver detalhes de ${product.name}`}>Ver detalhes</button>
                     {product.badge && (
                       <div className="product-badge">
                         <span className={`badge badge-${product.badge}`}>
@@ -133,11 +135,14 @@ export default function ProductCarousel({ id, title, products, showViewAll = fal
                     <div className="product-quick-actions">
                       <button
                         className="quick-action-btn"
-                        aria-label={`Adicionar ${product.name} aos favoritos`}
+                        aria-label={`Compartilhar ${product.name}`}
                         onClick={(e) => { e.stopPropagation(); handleShare(product); }}
                       >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                          <circle cx="18" cy="5" r="3" />
+                          <circle cx="6" cy="12" r="3" />
+                          <circle cx="18" cy="19" r="3" />
+                          <path d="M9 10.5l6-4M9 13.5l6 4" />
                         </svg>
                       </button>
                       <button
@@ -156,23 +161,16 @@ export default function ProductCarousel({ id, title, products, showViewAll = fal
                     <div className="product-meta">
                       <span className="product-category">{product.category}</span>
                       <span className="product-price">
-                        {product.badge === 'sale' ? (
-                          <span>
-                            {formatPrice(product.price)}
-                            <span className="from"> {formatPrice(product.price * 1.3)}</span>
-                          </span>
-                        ) : (
-                          formatPrice(product.price)
-                        )}
+{formatPrice(product.price)}
                       </span>
                     </div>
                     <h3 className="product-title">{product.name}</h3>
                     <p className="product-desc">{product.description}</p>
                     <div className="product-footer">
                       <div className="product-colors">
-                        <span className="color-swatch" data-color="branco" aria-label="Branco"></span>
-                        <span className="color-swatch" data-color="azul" aria-label="Azul"></span>
-                        <span className="color-swatch" data-color="verde" aria-label="Verde"></span>
+                        <span className="color-swatch" data-color="branco" aria-hidden="true"></span>
+                        <span className="color-swatch" data-color="azul" aria-hidden="true"></span>
+                        <span className="color-swatch" data-color="verde" aria-hidden="true"></span>
                       </div>
                       <button
                         className="btn btn-primary btn-add-cart"
@@ -191,8 +189,7 @@ export default function ProductCarousel({ id, title, products, showViewAll = fal
               onClick={scrollRight}
               disabled={!canScrollRight}
               aria-label="Próximos produtos"
-              aria-hidden={!canScrollRight}
-            >
+                          >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <path d="M9 18l6-6-6-6" />
               </svg>
@@ -222,6 +219,7 @@ export default function ProductCarousel({ id, title, products, showViewAll = fal
       </section>
 
       <QuickViewModal
+        key={quickViewProduct?.id ?? "closed"}
         product={quickViewProduct}
         isOpen={!!quickViewProduct}
         onClose={() => setQuickViewProduct(null)}

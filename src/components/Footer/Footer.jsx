@@ -1,31 +1,36 @@
+import { useUser } from '../../context/useUser.js'
 import './Footer.css'
 
-function Footer() {
-  const footerLinks = {
-    'Institucional': [
-      { label: 'Sobre nós', href: '#' },
-      { label: 'Nossas lojas', href: '#' },
-      { label: 'Trabalhe conosco', href: '#' },
-      { label: 'Sustentabilidade', href: '#' },
-    ],
-    'Atendimento': [
-      { label: 'Central de ajuda', href: '#' },
-      { label: 'Como comprar', href: '#' },
-      { label: 'Envio de receita', href: '#receita' },
-      { label: 'Rastrear pedido', href: '#' },
-    ],
-    'Minha Conta': [
-      { label: 'Meus pedidos', href: '#' },
-      { label: 'Meus dados', href: '#' },
-      { label: 'Endereços', href: '#' },
-      { label: 'Lista de desejos', href: '#' },
-    ],
-    'Formas de Pagamento': [
-      { label: 'Cartão de crédito', href: '#' },
-      { label: 'Boleto bancário', href: '#' },
-      { label: 'Pix', href: '#' },
-      { label: 'Cartão FarmaVida', href: '#' },
-    ],
+const explore = [
+  { label: 'Catálogo completo', href: '#catalog-controls' },
+  { label: 'Medicamentos', href: '#medicamentos' },
+  { label: 'Vitaminas', href: '#vitaminas' },
+  { label: 'Enviar receita', href: '#receita' },
+]
+const accountLinks = [
+  { label: 'Meus dados', tab: 'dados' },
+  { label: 'Endereços', tab: 'enderecos' },
+  { label: 'Pedidos', tab: 'pedidos' },
+  { label: 'Segurança', tab: 'seguranca' },
+]
+
+export default function Footer() {
+  const { isLoggedIn, openAuth, openAccount } = useUser()
+
+  const openAccountTab = (tab) => {
+    if (isLoggedIn) openAccount(tab)
+    else openAuth('login')
+  }
+
+  const goTo = (event, href) => {
+    // Pode haver uma categoria oculta por causa de filtros ativos.
+    if (/^#(medicamentos|vitaminas)$/.test(href)) {
+      event.preventDefault()
+      window.dispatchEvent(new CustomEvent('farmavida:navigate-category'))
+      window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+        document.querySelector(href)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }))
+    }
   }
 
   return (
@@ -42,57 +47,39 @@ function Footer() {
                 </svg>
               </div>
               <div className="brand-text">
-                <strong>Farma</strong>
-                <span>Vida</span>
-                <small>Farmácia Virtual</small>
+                <strong>Farma</strong><span>Vida</span><small>Farmácia Virtual</small>
               </div>
             </div>
-            <p className="footer-tagline">Sua saúde em boas mãos. Medicamentos, genéricos, vitaminas e dermocosméticos com entrega rápida e segura em todo Brasil.</p>
-            <div className="footer-social" role="list" aria-label="Redes sociais">
-              <a href="#" role="listitem" aria-label="Instagram">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                </svg>
-              </a>
-              <a href="#" role="listitem" aria-label="Facebook">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                </svg>
-              </a>
-              <a href="#" role="listitem" aria-label="YouTube">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                  <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17z" />
-                  <path d="M10 15l5-3-5-3z" />
-                </svg>
-              </a>
-            </div>
+            <p className="footer-tagline">
+              Projeto desenvolvido para a disciplina de Laboratório de Desenvolvimento.
+              Produtos, preços, pagamentos e análise farmacêutica são demonstrativos.
+            </p>
           </div>
-
-          <nav className="footer-nav" aria-label="Links do rodapé">
-            {Object.entries(footerLinks).map(([title, links]) => (
-              <div key={title} className="footer-col">
-                <h4>{title}</h4>
-                <ul>
-                  {links.map((link) => (
-                    <li key={link.href}>
-                      <a href={link.href}>{link.label}</a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+          <nav className="footer-nav" aria-label="Navegação do rodapé">
+            <div className="footer-col">
+              <h4>Explorar</h4>
+              <ul>{explore.map(({ href, label }) => (
+                <li key={href}><a href={href} onClick={(event) => goTo(event, href)}>{label}</a></li>
+              ))}</ul>
+            </div>
+            <div className="footer-col">
+              <h4>Minha conta</h4>
+              <ul>{accountLinks.map(({ tab, label }) => (
+                <li key={tab}><button type="button" onClick={() => openAccountTab(tab)}>{label}</button></li>
+              ))}</ul>
+            </div>
+            <div className="footer-col">
+              <h4>Sobre o projeto</h4>
+              <p className="footer-note">Protótipo educacional em React, Vite e Supabase. Não realiza vendas, pagamentos, entregas ou atendimento clínico.</p>
+              <p className="footer-note">Use somente dados e receitas fictícios nos testes.</p>
+            </div>
           </nav>
         </div>
-
         <div className="footer-bottom">
-          <p>&copy; 2024 FarmaVida. Todos os direitos reservados.</p>
-          <p className="footer-legal">CNPJ: 00.000.000/0001-00 | Farmácia responsável: CRF/SP 00000</p>
+          <p>© {new Date().getFullYear()} FarmaVida · Projeto acadêmico</p>
+          <p className="footer-legal">Demonstração sem CNPJ, licença sanitária ou farmacêutico responsável reais.</p>
         </div>
       </div>
     </footer>
   )
 }
-
-export default Footer

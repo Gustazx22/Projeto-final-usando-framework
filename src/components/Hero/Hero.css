@@ -1,2 +1,24 @@
-/* Hero component styles - using design system variables from index.css */
-/* All styles are now in the global index.css design system */
+/* A segunda foto permanece inteiramente dentro do banner e flutua com suavidade. */
+.hero-visual { min-width: 0; padding: 1rem 0; }
+.hero-image-stack { isolation: isolate; }
+.hero-img-overlay {
+  right: 1.5%;
+  bottom: 3.5%;
+  width: 42%;
+  max-height: 45%;
+  object-fit: cover;
+  transform: rotate(3deg);
+  animation: fv-hero-overlay-drift 6.5s ease-in-out infinite alternate;
+  z-index: 2;
+}
+.hero-price-tag { z-index: 3; }
+@keyframes fv-hero-overlay-drift {
+  from { transform: translateY(0) rotate(2deg); }
+  to { transform: translateY(-13px) rotate(-1.5deg); }
+}
+@media (max-width: 768px) {
+  .hero-img-overlay { right: 2%; bottom: 3%; width: 38%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-img-overlay { animation: none; transform: rotate(2deg); }
+}

@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import { useToast } from '../../context/ToastContext'
+import { useToast } from '../../context/useToast.js'
 import { validateReceiptFile } from '../../services/receipts.js'
 import './ReceiptUpload.css'
 

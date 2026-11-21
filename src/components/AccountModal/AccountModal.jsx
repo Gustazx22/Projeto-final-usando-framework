@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { useUser } from '../../context/UserContext'
-import { useToast } from '../../context/ToastContext'
+import { useUser } from '../../context/useUser.js'
+import { useToast } from '../../context/useToast.js'
 import { formatBRL } from '../../utils/format'
 import { isRemote } from '../../services/db'
 import AddressForm from '../AddressForm/AddressForm'
 import ChangePasswordForm from '../ChangePasswordForm/ChangePasswordForm'
-import ReceiptReviewPanel from '../ReceiptReviewPanel/ReceiptReviewPanel'
 import Modal from '../ui/Modal'
 import './AccountModal.css'
 
@@ -17,7 +16,7 @@ export default function AccountModal() {
     user, accountOpen, accountTab, setAccountTab, closeAccount, logout,
     addresses, addAddress, updateAddress, removeAddress, setDefaultAddress, orders,
     dataError, dataLoading, reloadAccountData,
-    receipts, receiptEvents, reviewQueue, isPharmacist, reviewReceipt, getReceiptUrl,
+    receipts, receiptEvents, getReceiptUrl,
   } = useUser()
   const { showToast } = useToast()
   const [editor, setEditor] = useState(null) // null | { mode: "add" } | { mode: "edit", address }
@@ -69,16 +68,13 @@ export default function AccountModal() {
   }
 
   const tabs = [['dados', 'Meus dados'], ['enderecos', 'Endereços'], ['pedidos', 'Pedidos'], ['seguranca', 'Segurança']]
-  if (isPharmacist) tabs.push(['analise', 'Analisar receitas'])
 
   return (
-    <Modal open={accountOpen} onClose={handleClose}
-      size={accountTab === 'analise' && isPharmacist ? 'lg' : 'md'}
-      className={accountTab === 'analise' && isPharmacist ? 'fv-account-review-modal' : ''}
+    <Modal open={accountOpen} onClose={handleClose} size="md"
       title="Minha conta" subtitle={user.email}>
-      <div className="fv-tabs ac-tabs" role="tablist">
+      <div className="fv-tabs ac-tabs" role="group" aria-label="Seções da conta">
         {tabs.map(([key, label]) => (
-          <button key={key} type="button" role="tab" aria-selected={accountTab === key}
+          <button key={key} type="button" aria-current={accountTab === key ? 'page' : undefined}
             className={`fv-tab ${accountTab === key ? 'active' : ''}`} onClick={() => { setEditor(null); setAccountTab(key) }}>
             {label}
           </button>
@@ -140,11 +136,6 @@ export default function AccountModal() {
             <button type="button" className="btn btn-primary" disabled={busy || dataLoading} onClick={() => setEditor({ userId: user.id, mode: 'add' })}>+ Adicionar endereço</button>
           </div>
         )
-      )}
-
-      {accountTab === 'analise' && isPharmacist && (
-        <ReceiptReviewPanel queue={reviewQueue} onReview={reviewReceipt} getReceiptUrl={getReceiptUrl}
-          onRefresh={reloadAccountData} loading={dataLoading} />
       )}
 
       {accountTab === 'pedidos' && (
