@@ -1,562 +1,399 @@
+import { useMemo, useState } from 'react'
 import { useCart } from '../../context/CartContext'
 import { useToast } from '../../context/ToastContext'
-import { useState, useEffect } from 'react'
+import { useUser } from '../../context/UserContext'
+import { STORE } from '../../config'
+import {
+  formatBRL, maskCard, maskExpiry, cardBrand, isValidCardNumber, isValidExpiry, buildPixPayload,
+} from '../../utils/format'
+import AddressForm from '../AddressForm/AddressForm'
+import ReceiptUpload from '../ReceiptUpload/ReceiptUpload'
+import Modal from '../ui/Modal'
 import './CheckoutModal.css'
 
-export default function CheckoutModal({ isOpen, onClose }) {
-  if (!isOpen) return null
+const STEPS = ['Entrega', 'Pagamento', 'Revisão']
+const PAYMENTS = [
+  { id: 'pix', icon: '⚡', title: 'Pix', desc: 'Aprovação na hora, com QR Code' },
+  { id: 'cartao', icon: '💳', title: 'Cartão de crédito', desc: 'Até 3x sem juros' },
+  { id: 'boleto', icon: '🧾', title: 'Boleto bancário', desc: 'Vence em 3 dias úteis' },
+  { id: 'whatsapp', icon: '💬', title: 'Combinar no WhatsApp', desc: 'Pague direto com a farmácia' },
+]
+const EMPTY_CARD = { number: '', name: '', expiry: '', cvv: '', installments: '1' }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
+export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChange }) {
   const { items, totalPrice, clearCart } = useCart()
   const { showToast } = useToast()
-  const [step, setStep] = useState(1) // 1: dados, 2: endereço, 3: pagamento, 4: confirmação
-  const [formData, setFormData] = useState({
-    nome: '',
-    telefone: '',
-    email: '',
-    cep: '',
-    endereco: '',
-    numero: '',
-    complemento: '',
-    bairro: '',
-    cidade: '',
-    estado: '',
-    cpf: '',
-    observacoes: '',
-    receita: null,
-    pagamento: 'whatsapp', // 'whatsapp', 'pix', 'cartao', 'boleto'
-  })
-  const [cepLoading, setCepLoading] = useState(false)
+  const { user, isLoggedIn, loading, addresses, addAddress, placeOrder, openAuth, openAccount } = useUser()
+
+  const [step, setStep] = useState(1)
+  const [addressId, setAddressId] = useState(null)
+  const [addingAddress, setAddingAddress] = useState(false)
+  const [obs, setObs] = useState('')
+  const [payment, setPayment] = useState('pix')
+  const [card, setCard] = useState(EMPTY_CARD)
   const [errors, setErrors] = useState({})
+  const [busy, setBusy] = useState(false)
+  const [done, setDone] = useState(null) // pedido concluído
 
-  const formatPrice = (price) => `R$ ${price.toFixed(2).replace('.', ',')}`
-  const deliveryFee = totalPrice >= 100 ? 0 : 12.90
+  const deliveryFee = totalPrice >= STORE.freeShippingFrom ? 0 : STORE.deliveryFee
   const total = totalPrice + deliveryFee
+  const maxInstallments = Math.max(1, Math.min(3, Math.floor(total / 20)))
 
-  // CEP autocomplete via ViaCEP
-  const handleCepBlur = async () => {
-    const cep = formData.cep.replace(/\D/g, '')
-    if (cep.length !== 8) return
+  const selectedAddress = useMemo(
+    () => addresses.find((a) => a.id === addressId) || addresses.find((a) => a.isDefault) || addresses[0] || null,
+    [addresses, addressId],
+  )
+  const needsNewAddress = addresses.length === 0 || addingAddress
 
-    setCepLoading(true)
-    try {
-      const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
-      const data = await res.json()
-      if (!data.erro) {
-        setFormData(prev => ({
-          ...prev,
-          endereco: data.logradouro || '',
-          bairro: data.bairro || '',
-          cidade: data.localidade || '',
-          estado: data.uf || '',
-        }))
-      } else {
-        setErrors(prev => ({ ...prev, cep: 'CEP não encontrado' }))
-      }
-    } catch {
-      setErrors(prev => ({ ...prev, cep: 'Erro ao buscar CEP' }))
-    } finally {
-      setCepLoading(false)
-    }
+  const reset = () => {
+    setStep(1); setAddressId(null); setAddingAddress(false); setObs(''); setPayment('pix')
+    setCard(EMPTY_CARD); setErrors({}); setBusy(false); setDone(null)
   }
+  const close = () => { onClose(); if (done) reset() }
 
-  const handleChange = (e) => {
-    const { name, value, type, files } = e.target
-    if (type === 'file') {
-      setFormData(prev => ({ ...prev, [name]: files[0] }))
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }))
-      if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }))
-    }
-  }
-
+  /* ---------- validações ---------- */
   const validateStep = () => {
-    const newErrors = {}
-    if (step === 1) {
-      if (!formData.nome.trim()) newErrors.nome = 'Nome completo é obrigatório'
-      if (!formData.telefone.trim()) newErrors.telefone = 'WhatsApp para contato é obrigatório'
-      if (!formData.email.trim()) newErrors.email = 'E-mail é obrigatório'
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'E-mail inválido'
-      if (!formData.cpf.trim()) newErrors.cpf = 'CPF é obrigatório para receitas controladas'
-      else if (!/^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/.test(formData.cpf.replace(/\D/g, ''))) newErrors.cpf = 'CPF inválido'
-    } else if (step === 2) {
-      if (!formData.cep.trim()) newErrors.cep = 'CEP é obrigatório'
-      else if (!/^\d{5}-?\d{3}$/.test(formData.cep)) newErrors.cep = 'CEP inválido'
-      if (!formData.endereco.trim()) newErrors.endereco = 'Endereço é obrigatório'
-      if (!formData.numero.trim()) newErrors.numero = 'Número é obrigatório'
-      if (!formData.bairro.trim()) newErrors.bairro = 'Bairro é obrigatório'
-      if (!formData.cidade.trim()) newErrors.cidade = 'Cidade é obrigatória'
-      if (!formData.estado.trim()) newErrors.estado = 'Estado é obrigatório'
+    const e = {}
+    if (step === 1 && !selectedAddress) e.address = 'Escolha ou cadastre um endereço de entrega.'
+    if (step === 2 && payment === 'cartao') {
+      if (!isValidCardNumber(card.number)) e.number = 'Número de cartão inválido'
+      if (card.name.trim().split(' ').filter(Boolean).length < 2) e.name = 'Nome como está no cartão'
+      if (!isValidExpiry(card.expiry)) e.expiry = 'Validade inválida'
+      if (!/^\d{3,4}$/.test(card.cvv)) e.cvv = 'CVV inválido'
     }
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
+  const next = () => { if (validateStep()) setStep((s) => s + 1) }
+  const back = () => setStep((s) => s - 1)
+
+  const setCardField = (name, value) => {
+    setCard((c) => ({ ...c, [name]: value }))
+    setErrors((e) => ({ ...e, [name]: '' }))
   }
 
-  const nextStep = () => {
-    if (validateStep()) setStep(prev => prev + 1)
+  /* ---------- endereço novo ---------- */
+  const saveAddress = async (data) => {
+    setBusy(true)
+    try {
+      const created = await addAddress(data)
+      setAddressId(created.id)
+      setAddingAddress(false)
+      setErrors({})
+    } catch (err) {
+      showToast(err.message || 'Erro ao salvar endereço', 'error')
+    } finally {
+      setBusy(false)
+    }
   }
 
-  const prevStep = () => setStep(prev => prev - 1)
+  /* ---------- confirmar pedido ---------- */
+  const confirm = async () => {
+    if (!selectedAddress) return
+    setBusy(true)
+    try {
+      if (payment === 'cartao') await sleep(1500) // simulação da operadora
 
-  const handleSubmit = async () => {
-    if (!validateStep()) return
+      const addr = {
+        label: selectedAddress.label, cep: selectedAddress.cep, endereco: selectedAddress.endereco,
+        numero: selectedAddress.numero, complemento: selectedAddress.complemento || '',
+        bairro: selectedAddress.bairro, cidade: selectedAddress.cidade, estado: selectedAddress.estado,
+      }
+      const order = await placeOrder({
+        itens: items.map((i) => ({ id: i.id, nome: i.name, qtd: i.quantity, preco: i.price })),
+        subtotal: totalPrice,
+        entrega: deliveryFee,
+        total,
+        pagamento: payment,
+        status: payment === 'cartao' ? 'pago' : payment === 'whatsapp' ? 'pendente' : 'aguardando_pagamento',
+        endereco: addr,
+        observacoes: obs,
+        receita: receipt?.name || '',
+      })
 
-    // Generate WhatsApp message
-    const itemsList = items.map((item, i) => 
-      `${i + 1}. ${item.name} - Qtd: ${item.quantity} - ${formatPrice(item.price * item.quantity)}`
-    ).join('\n')
-
-    const message = `*NOVO PEDIDO FARMAVIDA*\n\n` +
-      `*Cliente:* ${formData.nome}\n` +
-      `*WhatsApp:* ${formData.telefone}\n` +
-      `*E-mail:* ${formData.email}\n` +
-      `*CPF:* ${formData.cpf}\n\n` +
-      `*ENDEREÇO DE ENTREGA:*\n` +
-      `${formData.endereco}, ${formData.numero}${formData.complemento ? ` - ${formData.complemento}` : ''}\n` +
-      `${formData.bairro} - ${formData.cidade}/${formData.estado}\n` +
-      `CEP: ${formData.cep}\n\n` +
-      `*ITENS DO PEDIDO:*\n${itemsList}\n\n` +
-      `*Subtotal:* ${formatPrice(totalPrice)}\n` +
-      `*Entrega:* ${deliveryFee === 0 ? 'Grátis' : formatPrice(deliveryFee)}\n` +
-      `*TOTAL:* ${formatPrice(total)}\n\n` +
-      `*Pagamento:* ${formData.pagamento === 'whatsapp' ? 'À combinar no WhatsApp' : formData.pagamento.toUpperCase()}\n` +
-      `${formData.observacoes ? `*Obs:* ${formData.observacoes}\n` : ''}` +
-      `${formData.receita ? `*Receita anexada:* ${formData.receita.name}` : 'Sem receita controlada'}`
-
-    const phone = '5511999999999'
-    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-    window.open(url, '_blank')
-
-    clearCart()
-    onClose()
-    setStep(1)
-    setFormData({
-      nome: '', telefone: '', email: '', cep: '', endereco: '', numero: '', complemento: '',
-      bairro: '', cidade: '', estado: '', cpf: '', observacoes: '', receita: null, pagamento: 'whatsapp'
-    })
-    showToast('Pedido enviado para o WhatsApp!', 'success')
+      const txid = String(order.id).replace(/[^A-Za-z0-9]/g, '').slice(0, 25)
+      setDone({
+        order,
+        items: items.map((i) => ({ ...i })),
+        address: selectedAddress,
+        payment,
+        pix: payment === 'pix'
+          ? buildPixPayload({ key: STORE.pixKey, name: STORE.name, city: STORE.city, amount: total, txid })
+          : null,
+        card: payment === 'cartao'
+          ? { brand: cardBrand(card.number) || 'Cartão', last4: card.number.replace(/\D/g, '').slice(-4), parcelas: Number(card.installments) }
+          : null,
+      })
+      clearCart()
+    } catch (err) {
+      showToast(err.message || 'Não foi possível concluir o pedido.', 'error')
+    } finally {
+      setBusy(false)
+    }
   }
 
-  const steps = [
-    { num: 1, label: 'Dados', icon: '👤' },
-    { num: 2, label: 'Endereço', icon: '📍' },
-    { num: 3, label: 'Pagamento', icon: '💳' },
-    { num: 4, label: 'Confirmar', icon: '✅' },
-  ]
+  const whatsappUrl = (d) => {
+    const o = d.order
+    const a = d.address
+    const lines = d.items.map((i, n) => `${n + 1}. ${i.name} - Qtd: ${i.quantity} - ${formatBRL(i.price * i.quantity)}`).join('\n')
+    const msg =
+      `*NOVO PEDIDO ${STORE.name.toUpperCase()}* #${String(o.id).replace(/-/g, '').slice(0, 8).toUpperCase()}\n\n` +
+      `*Cliente:* ${user.nome}\n*WhatsApp:* ${user.telefone}\n*CPF:* ${user.cpf}\n\n` +
+      `*ENTREGA:*\n${a.endereco}, ${a.numero}${a.complemento ? ` - ${a.complemento}` : ''}\n${a.bairro} - ${a.cidade}/${a.estado}\nCEP: ${a.cep}\n\n` +
+      `*ITENS:*\n${lines}\n\n*Subtotal:* ${formatBRL(o.subtotal)}\n*Entrega:* ${o.entrega === 0 ? 'Grátis' : formatBRL(o.entrega)}\n*TOTAL:* ${formatBRL(o.total)}\n\n` +
+      `*Pagamento:* ${PAYMENTS.find((p) => p.id === d.payment)?.title}\n` +
+      `${o.observacoes ? `*Obs:* ${o.observacoes}\n` : ''}${o.receita ? `*Receita (PDF):* ${o.receita}` : ''}`
+    return `https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent(msg)}`
+  }
 
-  return (
-      <>
-        {isOpen && <div className="modal-overlay" onClick={onClose} aria-hidden="true"></div>}
-        <div className="modal checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
-        <button className="modal-close" onClick={onClose} aria-label="Fechar checkout">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
+  const copy = async (text) => {
+    try { await navigator.clipboard.writeText(text); showToast('Código copiado!', 'success') }
+    catch { showToast('Não foi possível copiar. Selecione e copie manualmente.', 'error') }
+  }
 
-        <div className="modal-body checkout-body">
-          {/* Progress indicator */}
-          <div className="checkout-progress" role="progressbar" aria-valuenow={step} aria-valuemin={1} aria-valuemax={4}>
-            {steps.map((s, i) => (
-              <div key={s.num} className={`progress-step ${i + 1 < step ? 'completed' : i + 1 === step ? 'active' : ''}`}>
-                <div className="step-circle">
-                  {i + 1 < step ? (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-                  ) : (
-                    s.icon
-                  )}
-                </div>
-                <span className="step-label">{s.label}</span>
-                {i < steps.length - 1 && <div className={`step-line ${i + 1 < step ? 'completed' : ''}`}></div>}
-              </div>
-            ))}
-          </div>
+  /* ======================= TELAS ======================= */
+  let body
 
-          <h2 id="checkout-title" className="checkout-title">Finalizar Pedido</h2>
-
-          {/* Step 1: Dados pessoais */}
-          {step === 1 && (
-            <form className="checkout-form" onSubmit={(e) => { e.preventDefault(); nextStep(); }}>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="nome">Nome completo *</label>
-                  <input
-                    id="nome"
-                    name="nome"
-                    type="text"
-                    value={formData.nome}
-                    onChange={handleChange}
-                    className={errors.nome ? 'error' : ''}
-                    placeholder="João da Silva"
-                    required
-                    autoFocus
-                  />
-                  {errors.nome && <span className="error-message">{errors.nome}</span>}
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="telefone">WhatsApp *</label>
-                  <input
-                    id="telefone"
-                    name="telefone"
-                    type="tel"
-                    value={formData.telefone}
-                    onChange={handleChange}
-                    className={errors.telefone ? 'error' : ''}
-                    placeholder="(11) 99999-9999"
-                    required
-                  />
-                  {errors.telefone && <span className="error-message">{errors.telefone}</span>}
-                </div>
-                <div className="form-group">
-                  <label htmlFor="email">E-mail *</label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className={errors.email ? 'error' : ''}
-                    placeholder="joao@email.com"
-                    required
-                  />
-                  {errors.email && <span className="error-message">{errors.email}</span>}
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="cpf">CPF * (para receitas controladas)</label>
-                  <input
-                    id="cpf"
-                    name="cpf"
-                    type="text"
-                    value={formData.cpf}
-                    onChange={handleChange}
-                    className={errors.cpf ? 'error' : ''}
-                    placeholder="000.000.000-00"
-                    required
-                    maxLength={14}
-                  />
-                  {errors.cpf && <span className="error-message">{errors.cpf}</span>}
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="observacoes">Observações</label>
-                  <textarea
-                    id="observacoes"
-                    name="observacoes"
-                    value={formData.observacoes}
-                    onChange={handleChange}
-                    rows={3}
-                    placeholder="Ex: Entregar no portão azul, tocar interfone 101..."
-                  />
-                </div>
-              </div>
-
-              <div className="form-actions">
-                <button type="button" className="btn btn-outline" onClick={onClose}>Cancelar</button>
-                <button type="submit" className="btn btn-primary">Próximo: Endereço</button>
-              </div>
-            </form>
-          )}
-
-          {/* Step 2: Endereço */}
-          {step === 2 && (
-            <form className="checkout-form" onSubmit={(e) => { e.preventDefault(); nextStep(); }}>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="cep">CEP *</label>
-                  <div className="cep-input-wrapper">
-                    <input
-                      id="cep"
-                      name="cep"
-                      type="text"
-                      value={formData.cep}
-                      onChange={handleChange}
-                      onBlur={handleCepBlur}
-                      className={errors.cep ? 'error' : ''}
-                      placeholder="00000-000"
-                      maxLength={9}
-                      required
-                    />
-                    {cepLoading && <span className="cep-loading">🔍</span>}
-                  </div>
-                  {errors.cep && <span className="error-message">{errors.cep}</span>}
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="endereco">Endereço *</label>
-                  <input
-                    id="endereco"
-                    name="endereco"
-                    type="text"
-                    value={formData.endereco}
-                    onChange={handleChange}
-                    className={errors.endereco ? 'error' : ''}
-                    placeholder="Rua das Flores"
-                    required
-                  />
-                  {errors.endereco && <span className="error-message">{errors.endereco}</span>}
-                </div>
-                <div className="form-group">
-                  <label htmlFor="numero">Número *</label>
-                  <input
-                    id="numero"
-                    name="numero"
-                    type="text"
-                    value={formData.numero}
-                    onChange={handleChange}
-                    className={errors.numero ? 'error' : ''}
-                    placeholder="123"
-                    required
-                  />
-                  {errors.numero && <span className="error-message">{errors.numero}</span>}
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="complemento">Complemento</label>
-                  <input
-                    id="complemento"
-                    name="complemento"
-                    type="text"
-                    value={formData.complemento}
-                    onChange={handleChange}
-                    placeholder="Apto 45, Bloco B, Casa 2..."
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="bairro">Bairro *</label>
-                  <input
-                    id="bairro"
-                    name="bairro"
-                    type="text"
-                    value={formData.bairro}
-                    onChange={handleChange}
-                    className={errors.bairro ? 'error' : ''}
-                    placeholder="Centro"
-                    required
-                  />
-                  {errors.bairro && <span className="error-message">{errors.bairro}</span>}
-                </div>
-                <div className="form-group">
-                  <label htmlFor="cidade">Cidade *</label>
-                  <input
-                    id="cidade"
-                    name="cidade"
-                    type="text"
-                    value={formData.cidade}
-                    onChange={handleChange}
-                    className={errors.cidade ? 'error' : ''}
-                    placeholder="São Paulo"
-                    required
-                  />
-                  {errors.cidade && <span className="error-message">{errors.cidade}</span>}
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="estado">Estado *</label>
-                  <select
-                    id="estado"
-                    name="estado"
-                    value={formData.estado}
-                    onChange={handleChange}
-                    className={errors.estado ? 'error' : ''}
-                    required
-                  >
-                    <option value="">Selecione</option>
-                    <option value="AC">Acre</option>
-                    <option value="AL">Alagoas</option>
-                    <option value="AP">Amapá</option>
-                    <option value="AM">Amazonas</option>
-                    <option value="BA">Bahia</option>
-                    <option value="CE">Ceará</option>
-                    <option value="DF">Distrito Federal</option>
-                    <option value="ES">Espírito Santo</option>
-                    <option value="GO">Goiás</option>
-                    <option value="MA">Maranhão</option>
-                    <option value="MT">Mato Grosso</option>
-                    <option value="MS">Mato Grosso do Sul</option>
-                    <option value="MG">Minas Gerais</option>
-                    <option value="PA">Pará</option>
-                    <option value="PB">Paraíba</option>
-                    <option value="PR">Paraná</option>
-                    <option value="PE">Pernambuco</option>
-                    <option value="PI">Piauí</option>
-                    <option value="RJ">Rio de Janeiro</option>
-                    <option value="RN">Rio Grande do Norte</option>
-                    <option value="RS">Rio Grande do Sul</option>
-                    <option value="RO">Rondônia</option>
-                    <option value="RR">Roraima</option>
-                    <option value="SC">Santa Catarina</option>
-                    <option value="SP">São Paulo</option>
-                    <option value="SE">Sergipe</option>
-                    <option value="TO">Tocantins</option>
-                  </select>
-                  {errors.estado && <span className="error-message">{errors.estado}</span>}
-                </div>
-              </div>
-
-              <div className="form-actions">
-                <button type="button" className="btn btn-outline" onClick={prevStep}>Voltar</button>
-                <button type="submit" className="btn btn-primary">Próximo: Pagamento</button>
-              </div>
-            </form>
-          )}
-
-          {/* Step 3: Pagamento */}
-          {step === 3 && (
-            <form className="checkout-form" onSubmit={(e) => { e.preventDefault(); nextStep(); }}>
-              <div className="form-group">
-                <label>Forma de pagamento *</label>
-                <div className="payment-options">
-                  <label className={`payment-option ${formData.pagamento === 'whatsapp' ? 'selected' : ''}`}>
-                    <input
-                      type="radio"
-                      name="pagamento"
-                      value="whatsapp"
-                      checked={formData.pagamento === 'whatsapp'}
-                      onChange={handleChange}
-                    />
-                    <div className="payment-card">
-                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.194 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.67-.297-.472-.404-.475-.67-.475h-.374c-.197 0-.497.124-.745.347-.248.224-.621.573-.94.82-.322.248-.57.372-.843.472-.272.099-.67.173-1.044.025-.372-.149-.916-.52-1.363-.82-.446-.298-.694-.372-.943-.372-.024 0-.149-.025-.223-.025-.074 0-.148.025-.198.075-.124.1-.248.248-.298.446-.049.198-.049.446-.049.744 0 .297.124.573.372.82.248.248.497.373.868.67.372.298.497.497.57.52.074.049.323.073.347.124.223.373 1.53 2.88 1.413 3.004-.173.197-.372.297-.768.373-.397.074-1.017.025-1.363-.223-.347-.248-.794-.448-1.19-.598-.397-.149-.718-.223-1.043-.322-.322-.099-.57-.223-.718-.223-.073 0-.147.025-.223.074-.075.049-.223.174-.223.322 0 .149.025.149.298.149.149 0 .297-.025.372-.149.075-.124.149-.223.223-.323.074-.099.148-.199.223-.323.073-.124.073-.223-.024-.446-.148-.297-.422-.573-.744-.871-.322-.297-.718-.67-1.043-.967-.322-.298-.57-.447-.718-.52-.149-.075-.248-.075-.347-.075-.148 0-.272.05-.347.1-.074.049-.149.124-.174.223-.024.075-.074.223-.099.347-.025.124-.099.173-.174.223-.074.049-.124.049-.173.049h-.398z"/></svg>
-                      <span>WhatsApp (combinar)</span>
-                      <small>Você finaliza o pagamento direto com a gente</small>
-                    </div>
-                  </label>
-
-                  <label className={`payment-option ${formData.pagamento === 'pix' ? 'selected' : ''}`}>
-                    <input
-                      type="radio"
-                      name="pagamento"
-                      value="pix"
-                      checked={formData.pagamento === 'pix'}
-                      onChange={handleChange}
-                    />
-                    <div className="payment-card">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 12h20M7 4v16M17 4v16"/></svg>
-                      <span>PIX</span>
-                      <small>Chave: farmavida@email.com</small>
-                    </div>
-                  </label>
-
-                  <label className={`payment-option ${formData.pagamento === 'cartao' ? 'selected' : ''}`}>
-                    <input
-                      type="radio"
-                      name="pagamento"
-                      value="cartao"
-                      checked={formData.pagamento === 'cartao'}
-                      onChange={handleChange}
-                    />
-                    <div className="payment-card">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                      <span>Cartão de crédito/débito</span>
-                      <small>Link de pagamento enviado no WhatsApp</small>
-                    </div>
-                  </label>
-
-                  <label className={`payment-option ${formData.pagamento === 'boleto' ? 'selected' : ''}`}>
-                    <input
-                      type="radio"
-                      name="pagamento"
-                      value="boleto"
-                      checked={formData.pagamento === 'boleto'}
-                      onChange={handleChange}
-                    />
-                    <div className="payment-card">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                      <span>Boleto bancário</span>
-                      <small>Vencimento em 3 dias úteis</small>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="receita">Receita controlada (PDF) *</label>
-                <input
-                  id="receita"
-                  name="receita"
-                  type="file"
-                  accept=".pdf"
-                  onChange={handleChange}
-                  className={formData.receita ? '' : 'error'}
-                />
-                {formData.receita && <span className="file-name">{formData.receita.name}</span>}
-                <span className="help-text">Obrigatório para medicamentos controlados. Retenção de lote conforme legislação.</span>
-              </div>
-
-              <div className="form-actions">
-                <button type="button" className="btn btn-outline" onClick={prevStep}>Voltar</button>
-                <button type="submit" className="btn btn-primary">Próximo: Confirmar</button>
-              </div>
-            </form>
-          )}
-
-          {/* Step 4: Confirmação */}
-          {step === 4 && (
-            <div className="checkout-confirm">
-              <div className="confirm-section">
-                <h3>👤 Dados do cliente</h3>
-                <p><strong>Nome:</strong> {formData.nome}</p>
-                <p><strong>WhatsApp:</strong> {formData.telefone}</p>
-                <p><strong>E-mail:</strong> {formData.email}</p>
-                <p><strong>CPF:</strong> {formData.cpf}</p>
-              </div>
-
-              <div className="confirm-section">
-                <h3>📍 Endereço de entrega</h3>
-                <p>{formData.endereco}, {formData.numero}{formData.complemento ? ` - ${formData.complemento}` : ''}</p>
-                <p>{formData.bairro} - {formData.cidade}/{formData.estado}</p>
-                <p>CEP: {formData.cep}</p>
-              </div>
-
-              <div className="confirm-section">
-                <h3>💳 Pagamento</h3>
-                <p>{formData.pagamento === 'whatsapp' ? 'WhatsApp (combinar)' : formData.pagamento.toUpperCase()}</p>
-                {formData.receita && <p>📄 Receita: {formData.receita.name}</p>}
-              </div>
-
-              <div className="confirm-section">
-                <h3>🛒 Itens do pedido</h3>
-                {items.map((item, i) => (
-                  <div key={item.id} className="confirm-item">
-                    <span>{i + 1}. {item.name} x {item.quantity}</span>
-                    <span>{formatPrice(item.price * item.quantity)}</span>
-                  </div>
-                ))}
-                <div className="confirm-totals">
-                  <div><span>Subtotal</span> <span>{formatPrice(totalPrice)}</span></div>
-                  <div><span>Entrega</span> <span>{deliveryFee === 0 ? 'Grátis' : formatPrice(deliveryFee)}</span></div>
-                  <div className="confirm-total"><span>TOTAL</span> <span>{formatPrice(total)}</span></div>
-                </div>
-              </div>
-
-              <div className="form-actions">
-                <button type="button" className="btn btn-outline" onClick={prevStep}>Voltar</button>
-                <button type="button" className="btn btn-primary btn-lg" onClick={handleSubmit}>
-                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.194 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.67-.297-.472-.404-.475-.67-.475h-.374c-.197 0-.497.124-.745.347-.248.224-.621.573-.94.82-.322.248-.57.372-.843.472-.272.099-.67.173-1.044.025-.372-.149-.916-.52-1.363-.82-.446-.298-.694-.372-.943-.372-.024 0-.149-.025-.223-.025-.074 0-.148.025-.198.075-.124.1-.248.248-.298.446-.049.198-.049.446-.049.744 0 .297.124.573.372.82.248.248.497.373.868.67.372.298.497.497.57.52.074.049.323.073.347.124.223.373 1.53 2.88 1.413 3.004-.173.197-.372.297-.768.373-.397.074-1.017.025-1.363-.223-.347-.248-.794-.448-1.19-.598-.397-.149-.718-.223-1.043-.322-.322-.099-.57-.223-.718-.223-.073 0-.147.025-.223.074-.075.049-.223.174-.223.322 0 .149.025.149.298.149.149 0 .297-.025.372-.149.075-.124.149-.223.223-.323.074-.099.148-.199.223-.323.073-.124.073-.223-.024-.446-.148-.297-.422-.573-.744-.871-.322-.297-.718-.67-1.043-.967-.322-.298-.57-.447-.718-.52-.149-.075-.248-.075-.347-.075-.148 0-.272.05-.347.1-.074.049-.149.124-.174.223-.024.075-.074.223-.099.347-.025.124-.099.173-.174.223-.074.049-.124.049-.173.049h-.398z"/></svg>
-                  Confirmar e enviar para WhatsApp
-                </button>
-              </div>
-            </div>
-          )}
-
+  if (loading) {
+    body = <p className="ck-center">Carregando…</p>
+  } else if (!isLoggedIn) {
+    body = (
+      <div className="ck-gate">
+        <div className="ck-gate-icon" aria-hidden="true">🔐</div>
+        <h3>Entre para finalizar sua compra</h3>
+        <p>Com uma conta você salva seus endereços, acompanha seus pedidos e compra mais rápido da próxima vez.</p>
+        <div className="fv-actions" style={{ justifyContent: 'center' }}>
+          <button type="button" className="btn btn-outline" onClick={() => openAuth('register')}>Criar conta</button>
+          <button type="button" className="btn btn-primary" onClick={() => openAuth('login')}>Entrar</button>
         </div>
       </div>
-    </>
+    )
+  } else if (items.length === 0 && !done) {
+    body = (
+      <div className="ck-gate">
+        <div className="ck-gate-icon" aria-hidden="true">🛒</div>
+        <h3>Seu carrinho está vazio</h3>
+        <button type="button" className="btn btn-primary" onClick={close}>Voltar às compras</button>
+      </div>
+    )
+  } else if (done) {
+    body = (
+      <div className="ck-done">
+        <div className="ck-done-icon" aria-hidden="true">✓</div>
+        <h3>Pedido realizado!</h3>
+        <p className="ck-code">Pedido #{String(done.order.id).replace(/-/g, '').slice(0, 8).toUpperCase()}</p>
+
+        {done.payment === 'pix' && (
+          <div className="ck-pay-box">
+            <p><strong>Pague com Pix</strong> · {formatBRL(done.order.total)}</p>
+            <img
+              className="ck-qr" alt="QR Code do Pix" width="220" height="220"
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&data=${encodeURIComponent(done.pix)}`}
+              onError={(e) => { e.currentTarget.style.display = 'none' }}
+            />
+            <label className="ck-label" htmlFor="pix-code">Pix copia e cola</label>
+            <textarea id="pix-code" className="ck-code-area" readOnly rows={3} value={done.pix} onFocus={(e) => e.target.select()} />
+            <button type="button" className="btn btn-primary btn-full" onClick={() => copy(done.pix)}>Copiar código Pix</button>
+            <small>Abra o app do seu banco, escolha “Pix → Copia e Cola” ou leia o QR Code.</small>
+          </div>
+        )}
+
+        {done.payment === 'cartao' && (
+          <div className="fv-alert fv-ok">
+            Pagamento aprovado no {done.card.brand} final {done.card.last4}
+            {done.card.parcelas > 1 ? ` em ${done.card.parcelas}x de ${formatBRL(done.order.total / done.card.parcelas)}` : ' à vista'}.
+          </div>
+        )}
+
+        {done.payment === 'boleto' && (
+          <div className="ck-pay-box">
+            <p><strong>Boleto bancário</strong> · {formatBRL(done.order.total)}</p>
+            <small>Vencimento em 3 dias úteis. O boleto é enviado ao seu e-mail e ao WhatsApp assim que a farmácia confirmar o pedido.</small>
+          </div>
+        )}
+
+        {done.payment === 'whatsapp' && (
+          <div className="fv-alert fv-info">Envie o pedido pelo WhatsApp para combinar a forma de pagamento com a farmácia.</div>
+        )}
+
+        <p className="ck-demo">
+          Ambiente de demonstração: nenhuma cobrança real é feita. Para vender de verdade, o pagamento deve passar por um
+          gateway (Mercado Pago, Stripe, Pagar.me…).
+        </p>
+
+        <div className="ck-done-actions">
+          <a className="btn btn-primary" href={whatsappUrl(done)} target="_blank" rel="noopener noreferrer">Enviar pedido pelo WhatsApp</a>
+          <button type="button" className="btn btn-outline" onClick={() => { close(); openAccount('pedidos') }}>Ver meus pedidos</button>
+        </div>
+      </div>
+    )
+  } else {
+    body = (
+      <>
+        <ol className="ck-steps" aria-label="Etapas do pedido">
+          {STEPS.map((label, i) => (
+            <li key={label} className={i + 1 < step ? 'done' : i + 1 === step ? 'active' : ''}>
+              <span>{i + 1 < step ? '✓' : i + 1}</span>{label}
+            </li>
+          ))}
+        </ol>
+
+        {/* ---- Passo 1: entrega ---- */}
+        {step === 1 && (
+          <div className="ck-section">
+            {needsNewAddress ? (
+              <>
+                <h3>{addresses.length === 0 ? 'Onde vamos entregar?' : 'Novo endereço'}</h3>
+                <AddressForm
+                  onSubmit={saveAddress} busy={busy} submitLabel="Salvar e usar este endereço"
+                  onCancel={addresses.length > 0 ? () => setAddingAddress(false) : undefined}
+                />
+              </>
+            ) : (
+              <>
+                <h3>Endereço de entrega</h3>
+                <div className="ck-addr-list">
+                  {addresses.map((a) => (
+                    <label key={a.id} className={`ck-addr ${selectedAddress?.id === a.id ? 'selected' : ''}`}>
+                      <input type="radio" name="address" checked={selectedAddress?.id === a.id} onChange={() => { setAddressId(a.id); setErrors({}) }} />
+                      <div>
+                        <strong>{a.label}</strong>
+                        <p>{a.endereco}, {a.numero}{a.complemento ? ` - ${a.complemento}` : ''}</p>
+                        <p>{a.bairro} · {a.cidade}/{a.estado} · CEP {a.cep}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                <button type="button" className="ck-link" onClick={() => setAddingAddress(true)}>+ Usar outro endereço</button>
+                {errors.address && <div className="fv-alert" role="alert">{errors.address}</div>}
+
+                <div className="fv-field" style={{ marginTop: '1rem' }}>
+                  <label htmlFor="ck-obs">Observações para a entrega (opcional)</label>
+                  <textarea id="ck-obs" rows={2} value={obs} onChange={(e) => setObs(e.target.value)} placeholder="Ex.: portão azul, tocar o interfone 101" />
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ---- Passo 2: pagamento ---- */}
+        {step === 2 && (
+          <div className="ck-section">
+            <h3>Forma de pagamento</h3>
+            <div className="ck-pays" role="radiogroup">
+              {PAYMENTS.map((p) => (
+                <label key={p.id} className={`ck-pay ${payment === p.id ? 'selected' : ''}`}>
+                  <input type="radio" name="payment" checked={payment === p.id} onChange={() => { setPayment(p.id); setErrors({}) }} />
+                  <span className="ck-pay-ico" aria-hidden="true">{p.icon}</span>
+                  <span><strong>{p.title}</strong><small>{p.desc}</small></span>
+                </label>
+              ))}
+            </div>
+
+            {payment === 'cartao' && (
+              <div className="fv-form ck-card">
+                <div className={`fv-field ${errors.number ? 'fv-invalid' : ''}`}>
+                  <label htmlFor="cc-number">Número do cartão {cardBrand(card.number) && <em className="ck-brand">{cardBrand(card.number)}</em>}</label>
+                  <input id="cc-number" inputMode="numeric" autoComplete="cc-number" placeholder="0000 0000 0000 0000"
+                    value={card.number} onChange={(e) => setCardField('number', maskCard(e.target.value))} />
+                  {errors.number && <span className="fv-error">{errors.number}</span>}
+                </div>
+                <div className={`fv-field ${errors.name ? 'fv-invalid' : ''}`}>
+                  <label htmlFor="cc-name">Nome impresso no cartão</label>
+                  <input id="cc-name" autoComplete="cc-name" placeholder="MARIA DA SILVA"
+                    value={card.name} onChange={(e) => setCardField('name', e.target.value.toUpperCase())} />
+                  {errors.name && <span className="fv-error">{errors.name}</span>}
+                </div>
+                <div className="fv-row">
+                  <div className={`fv-field ${errors.expiry ? 'fv-invalid' : ''}`}>
+                    <label htmlFor="cc-exp">Validade</label>
+                    <input id="cc-exp" inputMode="numeric" autoComplete="cc-exp" placeholder="MM/AA"
+                      value={card.expiry} onChange={(e) => setCardField('expiry', maskExpiry(e.target.value))} />
+                    {errors.expiry && <span className="fv-error">{errors.expiry}</span>}
+                  </div>
+                  <div className={`fv-field ${errors.cvv ? 'fv-invalid' : ''}`}>
+                    <label htmlFor="cc-cvv">CVV</label>
+                    <input id="cc-cvv" inputMode="numeric" autoComplete="cc-csc" placeholder="123" maxLength={4}
+                      value={card.cvv} onChange={(e) => setCardField('cvv', e.target.value.replace(/\D/g, ''))} />
+                    {errors.cvv && <span className="fv-error">{errors.cvv}</span>}
+                  </div>
+                </div>
+                <div className="fv-field">
+                  <label htmlFor="cc-inst">Parcelas</label>
+                  <select id="cc-inst" value={card.installments} onChange={(e) => setCardField('installments', e.target.value)}>
+                    {Array.from({ length: maxInstallments }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>{n}x de {formatBRL(total / n)} sem juros</option>
+                    ))}
+                  </select>
+                </div>
+                <p className="fv-hint">🔒 Os dados do cartão não são salvos em nenhum lugar.</p>
+              </div>
+            )}
+
+            <div className="ck-receipt">
+              <h4>Receita médica (opcional)</h4>
+              <ReceiptUpload onReceiptChange={onReceiptChange} currentReceipt={receipt} helpText="Anexe o PDF se houver medicamento controlado." />
+            </div>
+          </div>
+        )}
+
+        {/* ---- Passo 3: revisão ---- */}
+        {step === 3 && selectedAddress && (
+          <div className="ck-section">
+            <h3>Confira seu pedido</h3>
+            <div className="ck-review">
+              <section>
+                <h4>📍 Entrega</h4>
+                <p>{selectedAddress.endereco}, {selectedAddress.numero}{selectedAddress.complemento ? ` - ${selectedAddress.complemento}` : ''}</p>
+                <p>{selectedAddress.bairro} · {selectedAddress.cidade}/{selectedAddress.estado} · CEP {selectedAddress.cep}</p>
+                {obs && <p><em>Obs.: {obs}</em></p>}
+              </section>
+              <section>
+                <h4>💳 Pagamento</h4>
+                <p>
+                  {PAYMENTS.find((p) => p.id === payment)?.title}
+                  {payment === 'cartao' && ` · ${cardBrand(card.number) || 'Cartão'} final ${card.number.replace(/\D/g, '').slice(-4)} · ${card.installments}x`}
+                </p>
+                {receipt && <p>📄 Receita: {receipt.name}</p>}
+              </section>
+              <section>
+                <h4>🛒 Itens</h4>
+                {items.map((i) => (
+                  <div key={i.id} className="ck-line"><span>{i.quantity}× {i.name}</span><span>{formatBRL(i.price * i.quantity)}</span></div>
+                ))}
+                <div className="ck-line ck-muted"><span>Subtotal</span><span>{formatBRL(totalPrice)}</span></div>
+                <div className="ck-line ck-muted"><span>Entrega</span><span>{deliveryFee === 0 ? 'Grátis' : formatBRL(deliveryFee)}</span></div>
+                <div className="ck-line ck-total"><span>Total</span><span>{formatBRL(total)}</span></div>
+              </section>
+            </div>
+          </div>
+        )}
+      </>
+    )
+  }
+
+  const showFooter = isLoggedIn && !done && items.length > 0 && !loading && !(step === 1 && needsNewAddress)
+  const footer = showFooter && (
+    <div className="ck-footer">
+      <div className="ck-footer-total"><span>Total</span><strong>{formatBRL(total)}</strong></div>
+      <div className="fv-actions">
+        {step > 1 && <button type="button" className="btn btn-outline" onClick={back} disabled={busy}>Voltar</button>}
+        {step < 3 ? (
+          <button type="button" className="btn btn-primary" onClick={next}>Continuar</button>
+        ) : (
+          <button type="button" className="btn btn-primary btn-lg" onClick={confirm} disabled={busy}>
+            {busy ? (payment === 'cartao' ? 'Processando pagamento…' : 'Enviando…') : `Confirmar pedido · ${formatBRL(total)}`}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+
+  return (
+    <Modal open={isOpen} onClose={close} size="lg" title={done ? 'Tudo certo!' : 'Finalizar pedido'} footer={footer || null} className="ck-modal">
+      {body}
+    </Modal>
   )
 }

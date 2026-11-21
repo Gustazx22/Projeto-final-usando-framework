@@ -4,7 +4,7 @@ import { useToast } from '../../context/ToastContext'
 import QuickViewModal from '../QuickViewModal/QuickViewModal'
 import './ProductCarousel.css'
 
-export default function ProductCarousel({ title, products, showViewAll = false, viewAllHref = '#' }) {
+export default function ProductCarousel({ id, title, products, showViewAll = false, viewAllHref = '#' }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [quickViewProduct, setQuickViewProduct] = useState(null)
   const carouselRef = useRef(null)
@@ -81,7 +81,7 @@ export default function ProductCarousel({ title, products, showViewAll = false, 
 
   return (
     <>
-      <section className="product-carousel-section" aria-labelledby={`${title.toLowerCase().replace(/\s+/g, '-')}-title`}>
+      <section id={id} className="product-carousel-section" aria-labelledby={`${title.toLowerCase().replace(/\s+/g, '-')}-title`}>
         <div className="container">
           <div className="carousel-header">
             <h2 id={`${title.toLowerCase().replace(/\s+/g, '-')}-title`} className="carousel-title">{title}</h2>

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useId } from 'react'
 import { useToast } from '../../context/ToastContext'
 import './ReceiptUpload.css'
 
@@ -15,6 +15,7 @@ export default function ReceiptUpload({
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState(null)
   const fileInputRef = useRef(null)
+  const inputId = useId()
 
   const validateFile = (f) => {
     if (f.type !== 'application/pdf') {
@@ -72,7 +73,7 @@ export default function ReceiptUpload({
 
   return (
     <div className={`receipt-upload ${dragActive ? 'drag-active' : ''} ${file ? 'has-file' : ''}`}>
-      <label className="receipt-upload-label" htmlFor="receita-upload">
+      <label className="receipt-upload-label" htmlFor={inputId}>
         <div className="upload-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -101,7 +102,7 @@ export default function ReceiptUpload({
         )}
         <input
           ref={fileInputRef}
-          id="receita-upload"
+          id={inputId}
           name="receita"
           type="file"
           accept=".pdf"

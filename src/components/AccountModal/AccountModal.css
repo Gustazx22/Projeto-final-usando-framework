@@ -1,0 +1,23 @@
+.ac-profile { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; }
+.ac-avatar { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary, #007b5e), var(--color-primary-lighter, #2fc99e)); color: #fff; font-size: 1.6rem; font-weight: 800; }
+.ac-profile dl { margin: 0; width: 100%; display: grid; gap: 0.6rem; }
+.ac-profile dl > div { display: flex; justify-content: space-between; gap: 1rem; padding: 0.65rem 0.9rem; background: var(--color-surface-alt, #f5faf7); border-radius: 10px; font-size: 0.9rem; }
+.ac-profile dt { color: var(--color-text-secondary, #4a6b5a); }
+.ac-profile dd { margin: 0; font-weight: 600; text-align: right; word-break: break-word; }
+
+.ac-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.ac-empty { text-align: center; color: var(--color-text-secondary, #4a6b5a); padding: 1.5rem 0; margin: 0; }
+.ac-card { display: flex; justify-content: space-between; gap: 1rem; padding: 0.9rem 1rem; border: 1.5px solid var(--color-border, #e8efe9); border-radius: 14px; background: #fff; }
+.ac-card.is-default { border-color: var(--color-primary, #007b5e); background: var(--color-primary-bg, #e6f4ee); }
+.ac-card p { margin: 0.15rem 0 0; font-size: 0.85rem; color: var(--color-text-secondary, #4a6b5a); }
+.ac-badge { display: inline-block; margin-left: 0.4rem; padding: 0.1rem 0.5rem; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; border-radius: 99px; background: var(--color-primary, #007b5e); color: #fff; vertical-align: middle; }
+.ac-card-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem; }
+.ac-card-actions button { border: 0; background: none; padding: 0; font: inherit; font-size: 0.78rem; color: var(--color-primary, #007b5e); cursor: pointer; text-decoration: underline; }
+.ac-card-actions button.danger { color: #b91c1c; }
+
+.ac-order { flex-direction: column; }
+.ac-order-top { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.ac-order ul { margin: 0.4rem 0; padding-left: 1.1rem; font-size: 0.85rem; color: var(--color-text-secondary, #4a6b5a); }
+.ac-order-total { color: var(--color-text, #1a2e28) !important; }
+.ac-status { padding: 0.15rem 0.6rem; font-size: 0.7rem; font-weight: 700; border-radius: 99px; background: #fff4e0; color: #9a6200; }
+.ac-status.s-pago { background: var(--color-primary-bg, #e6f4ee); color: var(--color-primary-dark, #00634b); }

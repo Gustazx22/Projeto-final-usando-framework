@@ -1,20 +1,50 @@
 import { useState, useEffect } from 'react'
 import { useCart } from '../../context/CartContext'
+import { useUser } from '../../context/UserContext'
 import './Header.css'
 
 function Header() {
   const [menuAberto, setMenuAberto] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [categoriesOpen, setCategoriesOpen] = useState(false)
+  const [activeId, setActiveId] = useState('')
   const { totalItems, toggleCart } = useCart()
+  const { user, isLoggedIn, openAuth, openAccount } = useUser()
+
+  const sectionIds = ['medicamentos', 'genericos', 'higiene', 'vitaminas', 'ofertas', 'receita']
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20)
+      // Destaca no menu a seção que está na tela
+      let current = ''
+      for (const id of sectionIds) {
+        const el = document.getElementById(id)
+        if (el && el.getBoundingClientRect().top <= 140) current = id
+      }
+      setActiveId(current)
     }
+    handleScroll()
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Clique no menu: rola suavemente até a seção (descontando a altura do cabeçalho)
+  const goTo = (e, href) => {
+    e.preventDefault()
+    setMenuAberto(false)
+    if (href === '#') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+    const el = document.querySelector(href)
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - 84
+      window.scrollTo({ top, behavior: 'smooth' })
+    }
+  }
+
+  const initial = (user?.nome || user?.email || '?').trim()[0]?.toUpperCase()
 
   const navItems = [
       { label: 'Início', href: '#', icon: '🏠' },
@@ -24,15 +54,6 @@ function Header() {
       { label: 'Vitaminas', href: '#vitaminas', icon: '💪' },
       { label: 'Ofertas', href: '#ofertas', icon: '🔥' },
       { label: 'Receita', href: '#receita', icon: '📄' },
-    ]
-
-  const categoryItems = [
-      { label: 'Medicamentos', href: '#medicamentos' },
-      { label: 'Genéricos', href: '#genericos' },
-      { label: 'Higiene', href: '#higiene' },
-      { label: 'Vitaminas', href: '#vitaminas' },
-      { label: 'Cuidados', href: '#cuidados' },
-      { label: 'Ofertas', href: '#ofertas' },
     ]
 
   return (
@@ -57,12 +78,13 @@ function Header() {
           </div>
 
           <nav className="main-nav" role="navigation" aria-label="Navegação principal">
-            {navItems.map((item, index) => (
+            {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="nav-btn"
+                className={`nav-btn ${item.href === `#${activeId}` || (item.href === '#' && !activeId) ? 'active' : ''}`}
                 aria-label={item.label}
+                onClick={(e) => goTo(e, item.href)}
               >
                 <span className="nav-icon" aria-hidden="true">{item.icon}</span>
                 <span>{item.label}</span>
@@ -71,6 +93,21 @@ function Header() {
           </nav>
 
           <div className="header-actions">
+            {isLoggedIn ? (
+              <button type="button" className="hd-user" onClick={() => openAccount('dados')} aria-label="Minha conta">
+                <span className="hd-avatar" aria-hidden="true">{initial}</span>
+                <span className="hd-user-name">{user.nome?.split(' ')[0] || 'Conta'}</span>
+              </button>
+            ) : (
+              <button type="button" className="hd-login" onClick={() => openAuth('login')}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                <span>Entrar</span>
+              </button>
+            )}
+
             <button
               className="cart-btn"
               onClick={toggleCart}
@@ -112,7 +149,7 @@ function Header() {
         {menuAberto && (
           <div className="menu" id="mobile-menu" role="navigation" aria-label="Menu mobile">
             {navItems.map((item) => (
-              <a key={item.href} href={item.href} onClick={() => setMenuAberto(false)}>
+              <a key={item.href} href={item.href} onClick={(e) => goTo(e, item.href)}>
                 <span aria-hidden="true">{item.icon}</span>
                 <span>{item.label}</span>
               </a>
@@ -120,13 +157,6 @@ function Header() {
           </div>
         )}
 
-        <nav className={`nav-categories ${categoriesOpen ? 'open' : ''}`} role="navigation" aria-label="Categorias">
-          <div className="nav-categories-list">
-            {categoryItems.map((item) => (
-              <a key={item.href} href={item.href}>{item.label}</a>
-            ))}
-          </div>
-        </nav>
       </header>
     </>
   )

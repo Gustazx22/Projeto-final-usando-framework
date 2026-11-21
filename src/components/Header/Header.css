@@ -1,2 +1,23 @@
-/* Header component styles - using design system variables from index.css */
-/* All styles are now in the global index.css design system */
+/* Botão de conta no cabeçalho + destaque do menu ativo */
+.hd-login, .hd-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text, #1a2e28);
+  background: #fff;
+  border: 1.5px solid var(--color-border-strong, #d1e7dd);
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.hd-login:hover, .hd-user:hover { border-color: var(--color-primary, #007b5e); color: var(--color-primary, #007b5e); }
+.hd-login svg { width: 18px; height: 18px; }
+.hd-avatar {
+  width: 26px; height: 26px; display: grid; place-items: center;
+  border-radius: 50%; background: var(--color-primary, #007b5e); color: #fff; font-size: 0.8rem; font-weight: 800;
+}
+@media (max-width: 900px) { .hd-login span, .hd-user-name { display: none; } .hd-login, .hd-user { padding: 0.5rem; } }

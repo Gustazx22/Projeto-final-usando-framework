@@ -125,6 +125,7 @@ function Categories() {
           {categories.map((category) => (
             <ProductCarousel
               key={category.id}
+              id={category.id}
               title={category.label}
               products={category.products}
               showViewAll
