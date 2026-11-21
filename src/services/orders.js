@@ -1,4 +1,3 @@
-/** Pedidos: somente ID + quantidade vão para o servidor; preços/status são calculados no banco. */
 import { demoCatalog } from '../data/demoCatalog.js'
 import { RECEIPT_BUCKET, validateReceiptFile, receiptStoragePath, displayReceiptError } from './receipts.js'
 
@@ -64,7 +63,6 @@ export function createRemoteOrders(client, { getToken } = {}) {
       let uploadPath = null
       let data
       if (order.receipt) {
-        // O arquivo é privado e só recebe vínculo após validação da transação SQL.
         const { data: authData, error: authError } = await client.auth.getUser()
         if (authError || !authData?.user?.id) throw new Error('Entre novamente para enviar sua receita.')
         uploadPath = receiptStoragePath(authData.user.id, crypto.randomUUID())
@@ -82,10 +80,9 @@ export function createRemoteOrders(client, { getToken } = {}) {
         if (result.error) throw uploadPath ? displayReceiptError(result.error) : translateOrderError(result.error)
         data = result.data
       } catch (error) {
-        // Evita arquivos órfãos caso a transação do pedido seja recusada.
-        // A política de DELETE bloqueia a remoção de arquivos já vinculados.
+        // Remove o PDF se o pedido não for criado.
         if (uploadPath) {
-          try { await client.storage.from(RECEIPT_BUCKET).remove([uploadPath]) } catch { /* limpeza pode ser feita depois */ }
+          try { await client.storage.from(RECEIPT_BUCKET).remove([uploadPath]) } catch { /* Mantém o erro original. */ }
         }
         throw error
       }
@@ -103,7 +100,6 @@ export function createRemoteOrders(client, { getToken } = {}) {
   }
 }
 
-// A demonstração reproduz as regras de preço, estado e titularidade do banco.
 export function createLocalOrders({ loadDb, saveDb, currentLocalUserId, newId, catalog = demoCatalog }) {
   const products = new Map(catalog.flatMap((category) => category.products.map((product) => [product.id, product])))
   return {
@@ -132,7 +128,6 @@ export function createLocalOrders({ loadDb, saveDb, currentLocalUserId, newId, c
         numero: address.numero, complemento: address.complemento || '',
         bairro: address.bairro, cidade: address.cidade, estado: address.estado,
       }
-      // Os dados do cartão e qualquer status enviado pelo navegador nunca são persistidos.
       const row = {
         id: newId(), user_id: owner, itens, subtotal, entrega, total,
         pagamento: order.payment, status: order.payment === 'whatsapp' ? 'pendente' : 'aguardando_pagamento',

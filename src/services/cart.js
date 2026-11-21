@@ -1,4 +1,3 @@
-/** Sanitização do carrinho salvo (não transforma preços do browser em preços confiáveis). */
 export const CART_STORAGE_KEY = 'farmavida-cart'
 export const MAX_CART_QUANTITY = 99
 export const MAX_CART_LINES = 50

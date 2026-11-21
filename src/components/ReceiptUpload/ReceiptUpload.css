@@ -1,5 +1,5 @@
-/* ReceiptUpload styles - using design system variables from index.css */
-/* All styles are now in the global index.css design system */
+
+
 .receipt-file-input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
 .receipt-upload { position: relative; }
 .receipt-upload:focus-within { outline: 2px solid #008369; outline-offset: 3px; }

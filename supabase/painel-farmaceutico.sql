@@ -1,7 +1,4 @@
--- FarmaVida | painel do farmacêutico - métricas acadêmicas agregadas
--- Execute DEPOIS de etapas6-7-receitas.sql. Repetível. Não apaga tabelas.
--- Acesso condicionado ao papel em public.pharmacist_users.
--- Os valores representam pedidos SIMULADOS, não faturamento ou pagamentos reais.
+-- Indicadores restritos ao perfil farmacêutico.
 
 create or replace function public.farmavida_pharmacist_dashboard()
 returns jsonb

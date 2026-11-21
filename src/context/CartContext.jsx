@@ -5,15 +5,13 @@ import {
   normalizeCartItem, readStoredCart, writeStoredCart,
 } from '../services/cart.js'
 
-
 export function CartProvider({ children }) {
   const [items, setItems] = useState(readStoredCart)
   const [isOpen, setIsOpen] = useState(false)
 
-  // Carrinho persistente, mesmo se o armazenamento estiver corrompido/indisponível.
   useEffect(() => { writeStoredCart(items) }, [items])
 
-  // Outras abas abertas no navegador recebem as alterações sem exigir F5.
+  // Sincroniza o carrinho entre abas.
   useEffect(() => {
     const sync = (event) => {
       if (event.key === CART_STORAGE_KEY || event.key === null) {

@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Uma configuração parcial não deve criar contas locais por engano.
 export function readSupabaseConfig(env = {}) {
   const url = (env.VITE_SUPABASE_URL || '').trim().replace(/\/+$/, '')
   const key = (env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || '').trim()
@@ -23,13 +22,13 @@ export function readSupabaseConfig(env = {}) {
       if (key.startsWith('sb_secret_')) {
         error = 'Use somente a chave pública anon ou publishable no frontend.'
       }
-      // Chaves legadas são JWTs. A chave service_role nunca pertence ao frontend.
+      // Chaves de serviço não devem ser expostas no frontend.
       try {
         const payload = key.split('.')[1]
         if (payload && JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))).role === 'service_role') {
           error = 'Use somente a chave pública anon ou publishable no frontend.'
         }
-      } catch { /* Uma publishable key não é um JWT. */ }
+      } catch { /* A chave pública pode não ser um JWT. */ }
     }
   }
   return { url, key, enabled, error }

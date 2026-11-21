@@ -2,7 +2,6 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { UserContext } from './contexts.js'
 import { db } from '../services/db'
 
-
 export function UserProvider({ children }) {
   const [user, setUser] = useState(null)
   const [addresses, setAddresses] = useState([])
@@ -25,8 +24,7 @@ export function UserProvider({ children }) {
   const [accountOpen, setAccountOpen] = useState(false)
   const [accountTab, setAccountTab] = useState('dados')
 
-  // O login independe das tabelas de endereços/pedidos. Uma falha nelas não
-  // pode transformar uma autenticação bem-sucedida em "senha incorreta".
+  // Erros no carregamento de dados não invalidam o login.
   const loadData = useCallback(async (userId) => {
     if (!alive.current || !userId || userRef.current?.id !== userId) return
     const request = ++dataRequest.current
@@ -73,7 +71,6 @@ export function UserProvider({ children }) {
       setDataError('')
       setDataLoading(Boolean(nextUser))
       if (!nextUser) setAccountOpen(false)
-      // O callback do Auth termina antes de iniciar outras chamadas ao SDK.
       if (nextUser) queueMicrotask(() => { void loadData(nextUser.id) })
     }
   }, [loadData])

@@ -14,7 +14,6 @@ export default function ReceiptUpload({
   const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef(null)
   const inputId = useId()
-  // A seleção é controlada pelo App: retirar o arquivo em outra seção atualiza esta.
   const file = currentReceipt
   const preview = useMemo(() => file ? URL.createObjectURL(file) : null, [file])
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview) }, [preview])

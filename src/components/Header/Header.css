@@ -1,4 +1,4 @@
-/* Botão de conta no cabeçalho + destaque do menu ativo */
+
 .hd-login, .hd-user {
   display: inline-flex;
   align-items: center;
@@ -22,7 +22,6 @@
 }
 @media (max-width: 900px) { .hd-login span, .hd-user-name { display: none; } .hd-login, .hd-user { padding: 0.5rem; } }
 
-/* O menu móvel renderizado pelo React tem a classe .menu (não .main-nav). */
 .site-header .menu { display: none; }
 @media (max-width: 1024px) {
   .site-header .menu {
@@ -54,7 +53,6 @@
 .header-receipt-link { background: var(--color-primary); }
 .header-receipt-link:hover { background: var(--color-primary-dark); box-shadow: var(--shadow-sm); }
 
-/* Alterna de volta à área farmacêutica sem trocar de conta. */
 .hd-workspace-switch {
   display: inline-flex;
   align-items: center;
@@ -70,7 +68,6 @@
 }
 .hd-workspace-switch:hover, .hd-workspace-switch:focus-visible { background: #d6f1e3; outline-offset: 2px; }
 
-/* Ajustes finos de alinhamento para o cabeçalho desktop */
 .site-header .header-inner {
   display: flex;
   align-items: center;

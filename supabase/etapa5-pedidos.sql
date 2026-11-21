@@ -1,11 +1,5 @@
--- FarmaVida | ETAPA 5 | Checkout validado no PostgreSQL
--- Execute no Supabase > SQL Editor > New query > Run.
--- Script idempotente: NAO apaga nem altera pedidos existentes.
--- Pre-requisito: executar etapa2-enderecos.sql e etapa3-catalogo.sql.
--- ATENCAO: constantes do frete (R$ 100 / R$ 12,90) devem acompanhar src/config.js.
--- Ambiente ACADEMICO: pagamentos sao somente simulados.
+-- Mantenha os valores de frete sincronizados com src/config.js.
 
--- Para bases que ainda nao criaram a tabela de pedidos (preserva tabelas existentes).
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
@@ -23,8 +17,7 @@ create table if not exists public.orders (
 create index if not exists farmavida_orders_by_user_created
   on public.orders (user_id, created_at desc);
 
--- Mantem linhas antigas para nao quebrar a historico, mas valida TODAS as novas linhas.
--- NOT VALID apenas ignora a verificacao retroativa dos pedidos ja registrados.
+-- NOT VALID mantém registros antigos sem dispensar validação dos novos.
 do $$
 begin
   if not exists (select 1 from pg_constraint
@@ -52,7 +45,6 @@ begin
   end if;
 end $$;
 
--- Clientes somente LEEM pedidos proprios. Ninguem grava pedidos diretamente via REST.
 alter table public.orders enable row level security;
 drop policy if exists "pedidos: dono cria" on public.orders;
 drop policy if exists "pedidos: dono le" on public.orders;
@@ -61,7 +53,7 @@ create policy "pedidos: dono le" on public.orders
 revoke all on table public.orders from public, anon, authenticated;
 grant select on table public.orders to authenticated;
 
--- A rotina privilegiada fica FORA dos schemas expostos na Data API.
+-- A função de criação é privada e valida o usuário.
 create schema if not exists private;
 revoke all on schema private from public, anon;
 grant usage on schema private to authenticated;
@@ -110,7 +102,6 @@ begin
     raise exception 'Informe de 1 a 50 produtos.';
   end if;
 
-  -- Nunca usar endereço de outra conta, mesmo que seja enviado um UUID conhecido.
   select * into v_address from public.addresses
    where id = p_address_id and user_id = v_uid;
   if not found then
@@ -136,7 +127,6 @@ begin
     end if;
     v_ids := array_append(v_ids, v_id);
 
-    -- A tabela e a fonte de verdade para nome, preco, disponibilidade e receita.
     select * into v_product from public.products
      where id = v_id and active = true;
     if not found then
@@ -152,11 +142,10 @@ begin
     ));
   end loop;
 
-  -- Frete decidido pelo servidor, independentemente dos dados do navegador.
   v_delivery := case when v_subtotal >= 100 then 0 else 12.90 end;
   v_total := v_subtotal + v_delivery;
 
-  -- Se o preço mudou enquanto o carrinho estava aberto, nao finalizar silenciosamente.
+  -- Rejeita o pedido quando o preço mudou.
   if p_expected_total is null or p_expected_total <> v_total then
     raise exception 'O preço do catálogo mudou. Atualize a página e adicione os produtos novamente antes de concluir.';
   end if;
@@ -184,7 +173,6 @@ revoke all on function private.farmavida_create_order_internal(jsonb,uuid,text,t
 grant execute on function private.farmavida_create_order_internal(jsonb,uuid,text,text,numeric)
   to authenticated;
 
--- RPC publico sem privilegios extras, chamando a funcao privada protegida.
 create or replace function public.farmavida_create_order(
   p_items jsonb,
   p_address_id uuid,
@@ -203,7 +191,6 @@ revoke all on function public.farmavida_create_order(jsonb,uuid,text,text,numeri
 grant execute on function public.farmavida_create_order(jsonb,uuid,text,text,numeric)
   to authenticated;
 
--- Conferencia sem vazar pedidos: ver apenas a existencia e permissoes das funcoes.
 select routine_schema, routine_name, security_type
 from information_schema.routines
 where routine_name in ('farmavida_create_order', 'farmavida_create_order_internal')

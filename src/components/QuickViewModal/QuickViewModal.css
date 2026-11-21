@@ -1,4 +1,4 @@
-/* A visualização rápida usa uma janela real e não as regras [open] do modal legado. */
+
 .quick-view-modal {
   position: fixed;
   inset: 0;

@@ -23,7 +23,6 @@ export default function Footer() {
   }
 
   const goTo = (event, href) => {
-    // Pode haver uma categoria oculta por causa de filtros ativos.
     if (/^#(medicamentos|vitaminas)$/.test(href)) {
       event.preventDefault()
       window.dispatchEvent(new CustomEvent('farmavida:navigate-category'))

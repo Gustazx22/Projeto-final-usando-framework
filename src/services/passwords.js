@@ -1,4 +1,3 @@
-// Validação compartilhada entre Supabase e modo demonstração.
 export function validatePasswordChange({ currentPassword, newPassword }) {
   if (typeof currentPassword !== 'string' || !currentPassword) {
     throw new Error('Informe sua senha atual.')

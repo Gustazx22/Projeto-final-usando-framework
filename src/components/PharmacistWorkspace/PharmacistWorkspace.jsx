@@ -163,7 +163,6 @@ export default function PharmacistWorkspace({ onViewStore }) {
   }, [])
 
   useEffect(() => {
-    // Resposta assíncrona evita cascatas de render ao montar o painel.
     let active = true
     void db.getPharmacistDashboard()
       .then((result) => {
@@ -201,7 +200,7 @@ export default function PharmacistWorkspace({ onViewStore }) {
     catch (error) { showToast(error.message || 'Não foi possível sair da conta.', 'error') }
   }
 
-  // A UI nunca é uma fonte de permissão. RPCs e Storage aplicam validação no servidor.
+  // O backend valida a permissão do farmacêutico.
   if (!isLoggedIn || !isPharmacist) return null
 
   return (

@@ -1,6 +1,5 @@
-/* ProductCarousel styles - using design system variables from index.css */
-/* All styles are now in the global index.css design system */
-/* "Ver todos" aciona o filtro de categoria sem alterar o estilo do link. */
+
+
 button.view-all-link {
   padding: 0;
   background: transparent;
@@ -13,7 +12,6 @@ button.view-all-link:focus-visible {
   outline-offset: 3px;
 }
 
-/* A imagem não é mais um controle inacessível; o botão oferece o mesmo acesso por teclado. */
 .product-image { position: relative; }
 .product-image-open {
   position: absolute;
@@ -29,8 +27,6 @@ button.view-all-link:focus-visible {
 .product-image-open:focus-visible { outline: 3px solid var(--color-primary); outline-offset: -4px; }
 .product-image .product-badge, .product-image .product-quick-actions { position: absolute; z-index: 2; }
 
-
-/* O tamanho de cada card usa a largura real da trilha, sem cortar o último. */
 .carousel-track { min-width: 0; }
 .carousel-track .product-card {
   flex: 0 0 calc((100% - 3 * var(--space-4)) / 4);

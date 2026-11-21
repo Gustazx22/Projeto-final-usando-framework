@@ -39,7 +39,7 @@ export default function ProductCarousel({ id, title, products, showViewAll = fal
 
     update()
     track.addEventListener('scroll', update, { passive: true })
-    // ResizeObserver mantém as setas corretas quando muda o número de cards visíveis.
+    // Atualiza as setas quando a largura do carrossel muda.
     const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null
     observer?.observe(track)
     window.addEventListener('resize', update)
@@ -92,7 +92,6 @@ export default function ProductCarousel({ id, title, products, showViewAll = fal
         showToast('Compartilhamento não disponível neste navegador.', 'info')
       }
     } catch (error) {
-      // O cancelamento do diálogo de compartilhamento é uma escolha do usuário.
       if (error?.name !== 'AbortError') showToast('Não foi possível compartilhar.', 'error')
     }
   }

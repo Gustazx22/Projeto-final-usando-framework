@@ -1,7 +1,3 @@
--- FarmaVida | ETAPA 3 | Catálogo público (produtos fictícios e categorias)
--- Execute no Supabase > SQL Editor > New query > Run.
--- Idempotente: pode rodar novamente; não apaga dados nem sobrescreve edições existentes.
--- Não execute para sistemas farmacêuticos reais sem revisão regulatória, de estoque e preços.
 
 create table if not exists public.product_categories (
   id text primary key,
@@ -26,7 +22,6 @@ create table if not exists public.products (
 create index if not exists farmavida_products_category_order
   on public.products (category_id, sort_order, id) where active;
 
--- Somente leitura pública. Escrita reservada ao SQL Editor / backend autorizado.
 alter table public.product_categories enable row level security;
 alter table public.products enable row level security;
 revoke all on table public.product_categories from anon, authenticated;
@@ -41,8 +36,7 @@ drop policy if exists "catalogo: produtos publicos" on public.products;
 create policy "catalogo: produtos publicos"
   on public.products for select to anon, authenticated using (active = true);
 
--- IDs e ordem originais do frontend, preservados para o carrinho existente.
--- ON CONFLICT DO NOTHING evita sobrescrever alterações manuais futuras.
+-- Preserva produtos já cadastrados ao executar novamente.
 insert into public.product_categories (id, label, sort_order) values
   ('medicamentos', 'Medicamentos', 0),
   ('genericos', 'Genéricos', 1),
@@ -91,6 +85,5 @@ insert into public.products (id, category_id, name, price, image, badge, descrip
   (36, 'ofertas', 'Kit Bebê Completo', '79.90', 'https://images.unsplash.com/photo-1556228578-0d85b1a4d79b?w=300&q=80', 'bestseller', 'Sabonete, shampoo, pomada, óleo', 5)
 on conflict (id) do nothing;
 
--- Conferência: 6 categorias, 36 produtos iniciais (salvo cadastros prévios).
 select (select count(*) from public.product_categories) as categorias,
        (select count(*) from public.products) as produtos;

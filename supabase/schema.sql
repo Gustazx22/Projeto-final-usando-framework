@@ -1,9 +1,4 @@
--- ===================================================================
--- FarmaVida - tabelas do banco (Supabase / PostgreSQL)
--- Como usar: Supabase > SQL Editor > New query > cole tudo > Run
--- ===================================================================
 
--- Endereços de entrega do cliente
 create table if not exists public.addresses (
   id          uuid primary key default gen_random_uuid(),
   user_id     uuid not null default auth.uid() references auth.users(id) on delete cascade,
@@ -19,7 +14,6 @@ create table if not exists public.addresses (
   created_at  timestamptz not null default now()
 );
 
--- Pedidos
 create table if not exists public.orders (
   id          uuid primary key default gen_random_uuid(),
   user_id     uuid not null default auth.uid() references auth.users(id) on delete cascade,
@@ -35,7 +29,6 @@ create table if not exists public.orders (
   created_at  timestamptz not null default now()
 );
 
--- Segurança: cada cliente só enxerga e altera os próprios dados
 alter table public.addresses enable row level security;
 alter table public.orders    enable row level security;
 

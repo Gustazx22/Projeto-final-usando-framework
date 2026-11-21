@@ -1,12 +1,4 @@
-/**
- * Camada de banco de dados do FarmaVida.
- *
- * - Com URL e chave pública no .env, usa o Supabase
- *   (PostgreSQL + autenticação). O cliente oficial gerencia a sessão; as tabelas usam REST.
- * - Sem essas variáveis, usa o modo demonstração: tudo fica no localStorage do navegador.
- *
- * Os componentes continuam usando as mesmas operações em ambos os modos.
- */
+// Usa Supabase quando configurado; caso contrário, dados locais.
 import { isRemote, supabase, supabaseConfigError } from './supabase.js'
 import { createRemoteAuth } from './auth.js'
 import { validatePasswordChange } from './passwords.js'
@@ -42,7 +34,6 @@ const remote = {
   ...createPharmacistDashboard(supabase),
 }
 
-/* ====================== Modo demonstração (localStorage) ====================== */
 const newId = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`)
 const loadDb = () => readJSON(LOCAL_DB_KEY, { users: [], addresses: [], orders: [] })
 const saveDb = (db) => writeJSON(LOCAL_DB_KEY, db)

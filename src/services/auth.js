@@ -26,7 +26,6 @@ export function authErrorMessage(error) {
   return 'Não foi possível concluir a autenticação. Tente novamente.'
 }
 
-// O adaptador mantém o contrato usado pelos componentes e permite testes sem contas reais.
 export function createRemoteAuth(client, { configurationError = '', redirectTo } = {}) {
   const requireClient = () => {
     if (!client) throw new Error(configurationError || 'Configure o Supabase antes de continuar.')
@@ -56,7 +55,6 @@ export function createRemoteAuth(client, { configurationError = '', redirectTo }
     },
     async changePassword({ currentPassword, newPassword, nonce = '' }) {
       validatePasswordChange({ currentPassword, newPassword })
-      // current_password é suportado pelo supabase-js 2.102+; o Auth valida no servidor.
       const changes = { password: newPassword, current_password: currentPassword }
       if (nonce) changes.nonce = nonce
       const { error } = await requireClient().updateUser(changes)
@@ -67,7 +65,6 @@ export function createRemoteAuth(client, { configurationError = '', redirectTo }
       check(error)
     },
     async signOut() {
-      // Encerra esta sessão, sem desconectar os demais dispositivos do usuário.
       const { error } = await requireClient().signOut({ scope: 'local' })
       check(error)
     },
@@ -76,7 +73,7 @@ export function createRemoteAuth(client, { configurationError = '', redirectTo }
       const { data: sessionData, error: sessionError } = await auth.getSession()
       check(sessionError)
       if (!sessionData.session) return null
-      // Valida no Auth; não confia apenas no usuário armazenado no navegador.
+      // Confirma a sessão no Supabase Auth.
       const { data, error } = await auth.getUser()
       if (error && [401, 403].includes(error.status)) {
         const { error: logoutError } = await auth.signOut({ scope: 'local' })
@@ -95,7 +92,6 @@ export function createRemoteAuth(client, { configurationError = '', redirectTo }
     subscribeAuth(listener) {
       if (!client) return () => {}
       const { data } = client.auth.onAuthStateChange((event, session) => {
-        // A restauração inicial é validada por restore(). Nunca aguarde APIs aqui.
         if (event !== 'INITIAL_SESSION') listener(toUser(session?.user), event)
       })
       return () => data.subscription.unsubscribe()

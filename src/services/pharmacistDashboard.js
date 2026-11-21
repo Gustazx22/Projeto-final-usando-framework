@@ -1,4 +1,3 @@
-/** Indicadores agregados: apenas RPC protegida para usuários farmacêuticos. */
 export const EMPTY_DASHBOARD = Object.freeze({
   orders_total: 0,
   orders_last_30_days: 0,

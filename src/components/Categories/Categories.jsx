@@ -29,7 +29,6 @@ function Categories() {
     return () => { cancelled = true }
   }, [reloadId])
 
-  // Se o usuário usar o menu principal, restaura as seções antes de navegar.
   useEffect(() => {
     const showSections = () => {
       setQuery('')
@@ -39,7 +38,6 @@ function Categories() {
     return () => window.removeEventListener('farmavida:navigate-category', showSections)
   }, [])
 
-  // A pesquisa do cabeçalho utiliza o mesmo catálogo já carregado na página.
   useEffect(() => {
     const handleHeaderSearch = (event) => {
       setQuery(String(event.detail?.query || ''))

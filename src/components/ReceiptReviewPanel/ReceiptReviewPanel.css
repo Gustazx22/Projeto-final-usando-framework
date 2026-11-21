@@ -1,4 +1,4 @@
-/* Layout exclusivo da análise, sem herdar o flex horizontal de .ac-card. */
+
 .review-panel,
 .review-list { display: grid; gap: 1rem; min-width: 0; }
 .review-panel { color: var(--color-text, #1a2e28); }

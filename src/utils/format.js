@@ -44,7 +44,6 @@ export function isValidCPF(value) {
   return calc(9) === Number(c[9]) && calc(10) === Number(c[10])
 }
 
-// Algoritmo de Luhn (validação do número do cartão)
 export function isValidCardNumber(value) {
   const d = digits(value)
   if (d.length < 13 || d.length > 19) return false
@@ -79,7 +78,6 @@ export function isValidExpiry(value) {
   return year > now.getFullYear() || (year === now.getFullYear() && month >= now.getMonth() + 1)
 }
 
-/* ---------- PIX (BR Code "copia e cola") ---------- */
 const tlv = (id, value) => `${id}${String(value.length).padStart(2, '0')}${value}`
 
 function crc16(str) {

@@ -1,4 +1,3 @@
-/** Serviços e validações de endereços (usados pelo Supabase e pela demonstração). */
 const ESTADOS = new Set('AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO'.split(' '))
 
 export function normalizeAddress(value) {
@@ -93,8 +92,6 @@ export function createRemoteAddresses(client, { getToken } = {}) {
   }
 }
 
-
-/** Mesmo contrato do Supabase para o modo demonstração; sem acesso entre contas. */
 export function createLocalAddresses({ loadDb, saveDb, currentLocalUserId, newId }) {
   const requireUser = (database) => {
     const id = currentLocalUserId()

@@ -1,4 +1,4 @@
-/* A segunda foto permanece inteiramente dentro do banner e flutua com suavidade. */
+
 .hero-visual { min-width: 0; padding: 1rem 0; }
 .hero-image-stack { isolation: isolate; }
 .hero-img-overlay {

@@ -1,7 +1,3 @@
--- FarmaVida | ETAPA 2 | Enderecos do cliente
--- Supabase > SQL Editor > New query > execute este arquivo UMA vez.
--- Pode ser reexecutado sem duplicar a tabela, as funcoes ou as policies.
--- Nao apaga enderecos existentes nem altera o schema dos pedidos.
 
 create table if not exists public.addresses (
   id uuid primary key default gen_random_uuid(),
@@ -20,8 +16,6 @@ create table if not exists public.addresses (
 
 alter table public.addresses enable row level security;
 
--- O script original ja utiliza estes nomes. Recriamos de modo idempotente,
--- com USING e WITH CHECK, restritas a usuarios autenticados.
 drop policy if exists "enderecos: dono le" on public.addresses;
 drop policy if exists "enderecos: dono cria" on public.addresses;
 drop policy if exists "enderecos: dono edita" on public.addresses;
@@ -40,8 +34,6 @@ create policy "enderecos: dono apaga" on public.addresses
 
 grant select, insert, update, delete on public.addresses to authenticated;
 
--- Preservar um unico principal por usuario, mesmo que dados anteriores
--- tenham sido inseridos manualmente sem essa regra.
 with extras as (
   select id, row_number() over (
     partition by user_id order by created_at, id
@@ -68,8 +60,6 @@ create unique index if not exists farmavida_one_default_address_per_user
 create index if not exists farmavida_addresses_user_order
   on public.addresses (user_id, created_at, id);
 
--- Cada chamada RPC executa numa unica transacao no PostgreSQL.
--- security invoker respeita as policies acima; nao usa service_role.
 create or replace function public.farmavida_save_address(
   p_address jsonb,
   p_id uuid default null
@@ -99,7 +89,7 @@ begin
     raise exception 'Preencha corretamente CEP, rua, numero, bairro, cidade e UF.' using errcode = '22023';
   end if;
 
-  -- Serializa mudancas de principal para o mesmo usuario.
+  -- Evita alterações simultâneas do endereço principal.
   perform pg_advisory_xact_lock(hashtextextended(v_user::text, 0));
   v_main := coalesce((p_address->>'is_default')::boolean, false);
 
@@ -203,8 +193,7 @@ begin
 end;
 $$;
 
--- Por padrao o PostgreSQL concede EXECUTE de funcoes a PUBLIC.
--- Mantemos as RPCs disponiveis apenas para usuarios logados.
+-- Restringe a execução das funções aos usuários autenticados.
 revoke all on function public.farmavida_save_address(jsonb, uuid) from public;
 revoke all on function public.farmavida_set_default_address(uuid) from public;
 revoke all on function public.farmavida_remove_address(uuid) from public;

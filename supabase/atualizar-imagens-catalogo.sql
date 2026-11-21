@@ -1,7 +1,4 @@
--- FarmaVida — atualiza somente imagens de catálogo; mantém preços, nomes, estoque,
--- permissões e pedidos. Execute no Supabase SQL Editor após instalar os SVGs locais.
--- Fotografias do Wikimedia Commons são ilustrativas (modelos, marcas ou doses podem diferir).
--- Os SVGs individuais em public/products/catalogo/ são usados como fallback na interface.
+-- Atualiza imagens sem alterar preços e pedidos.
 UPDATE public.products AS p
 SET image = v.image
 FROM (VALUES

@@ -1,21 +1,15 @@
--- FarmaVida | ETAPAS 6 E 7 | Receita PDF privada e análise manual simulada
--- Executar APÓS etapa2-enderecos.sql, etapa3-catalogo.sql e etapa5-pedidos.sql.
--- Execute o script INTEIRO no SQL Editor (proprietário postgres), sem chaves secretas no frontend.
--- Repetível: não remove usuários, pedidos nem receitas anteriores.
--- Protótipo acadêmico: não utilizar receitas reais/dados pessoais sensíveis no teste.
 
 create schema if not exists private;
 revoke all on schema private from public, anon;
 grant usage on schema private to authenticated;
 
--- Somente o administrador do projeto pode conceder esse papel via SQL Editor.
+-- O perfil farmacêutico é atribuído pelo administrador.
 create table if not exists public.pharmacist_users (
   user_id uuid primary key references auth.users(id) on delete cascade,
   created_at timestamptz not null default now()
 );
 alter table public.pharmacist_users enable row level security;
 revoke all on table public.pharmacist_users from public, anon, authenticated;
--- Nenhuma política INSERT/UPDATE/DELETE é concedida ao usuário autenticado.
 
 create or replace function private.farmavida_has_pharmacist_role()
 returns boolean language sql stable security definer set search_path = ''
@@ -31,7 +25,7 @@ as $$ select private.farmavida_has_pharmacist_role(); $$;
 revoke all on function public.farmavida_is_pharmacist() from public, anon;
 grant execute on function public.farmavida_is_pharmacist() to authenticated;
 
--- Bucket PRIVADO. URLs públicas nunca são usadas para estes documentos.
+-- PDFs são armazenados em bucket privado.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('farmavida-receitas', 'farmavida-receitas', false, 10485760, array['application/pdf']::text[])
 on conflict (id) do update set
@@ -76,7 +70,6 @@ drop policy if exists farmavida_receipt_events_read on public.receipt_events;
 create policy farmavida_receipt_events_read on public.receipt_events for select to authenticated
  using (owner_id = (select auth.uid()) or (select private.farmavida_has_pharmacist_role()));
 
--- O Storage usa RLS para upload/download e impede excluir PDFs vinculados.
 drop policy if exists farmavida_receipts_upload on storage.objects;
 create policy farmavida_receipts_upload on storage.objects for insert to authenticated
  with check (bucket_id = 'farmavida-receitas'
@@ -97,7 +90,7 @@ create policy farmavida_receipts_cleanup on storage.objects for delete to authen
    and owner_id = (select auth.uid())::text
    and not exists(select 1 from public.receipt_documents rd where rd.storage_path = name));
 
--- Pedido com PDF: transação atômica. O banco revalida itens, preço, frete e endereço.
+-- Pedido e receita são vinculados na mesma transação.
 
 create or replace function private.farmavida_create_order_with_receipt_internal(
   p_items jsonb,
@@ -130,7 +123,6 @@ begin
   if v_uid is null then
     raise exception 'Faça login para finalizar um pedido.';
   end if;
-  -- O upload pertence ao usuário autenticado e ainda não foi vinculado a outro pedido.
   if p_receipt_path is null or p_receipt_path !~ ('^' || v_uid::text || '/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.pdf$') then
     raise exception 'Caminho de receita inválido ou de outro usuário.';
   end if;
@@ -167,7 +159,6 @@ begin
     raise exception 'Informe de 1 a 50 produtos.';
   end if;
 
-  -- Nunca usar endereço de outra conta, mesmo que seja enviado um UUID conhecido.
   select * into v_address from public.addresses
    where id = p_address_id and user_id = v_uid;
   if not found then
@@ -193,7 +184,6 @@ begin
     end if;
     v_ids := array_append(v_ids, v_id);
 
-    -- A tabela e a fonte de verdade para nome, preco, disponibilidade e receita.
     select * into v_product from public.products
      where id = v_id and active = true;
     if not found then
@@ -206,11 +196,9 @@ begin
     ));
   end loop;
 
-  -- Frete decidido pelo servidor, independentemente dos dados do navegador.
   v_delivery := case when v_subtotal >= 100 then 0 else 12.90 end;
   v_total := v_subtotal + v_delivery;
 
-  -- Se o preço mudou enquanto o carrinho estava aberto, nao finalizar silenciosamente.
   if p_expected_total is null or p_expected_total <> v_total then
     raise exception 'O preço do catálogo mudou. Atualize a página e adicione os produtos novamente antes de concluir.';
   end if;
@@ -256,7 +244,7 @@ revoke all on function public.farmavida_create_order_with_receipt(jsonb,uuid,tex
 grant execute on function public.farmavida_create_order_with_receipt(jsonb,uuid,text,text,numeric,text,text)
   to authenticated;
 
--- Fila: somente usuários explicitamente autorizados pelo administrador.
+-- A fila exige perfil farmacêutico.
 create or replace function private.farmavida_review_queue_internal()
 returns table(
  id uuid, order_id uuid, file_name text, storage_path text, status text,
@@ -284,7 +272,7 @@ as $$ select * from private.farmavida_review_queue_internal(); $$;
 revoke all on function public.farmavida_review_queue() from public, anon;
 grant execute on function public.farmavida_review_queue() to authenticated;
 
--- Nunca aceitar status vindo do cliente. Apenas a transação privilegiada decide.
+-- O status é definido pelo servidor.
 create or replace function private.farmavida_review_receipt_internal(
   p_receipt_id uuid, p_decision text, p_note text
 ) returns public.receipt_documents
@@ -335,9 +323,5 @@ language sql security invoker set search_path = ''
 as $$ select private.farmavida_review_receipt_internal($1,$2,$3); $$;
 revoke all on function public.farmavida_review_receipt(uuid,text,text) from public, anon;
 grant execute on function public.farmavida_review_receipt(uuid,text,text) to authenticated;
-
--- ATIVAR UM FARMACÊUTICO SOMENTE DEPOIS DE CRIAR O USUÁRIO NO AUTH:
--- insert into public.pharmacist_users(user_id) values ('UID-DO-AUTH-USERS'::uuid)
--- on conflict (user_id) do nothing;
 
 select 'Etapas 6-7 criadas: bucket privado, documentos, eventos, permissões e RPCs' as resultado;

@@ -1,6 +1,3 @@
-/** Dados fictícios originais, usados SOMENTE quando o Supabase não está configurado.
- * A versão remota é carregada de public.product_categories e public.products.
- */
 export const demoCatalog = [
     {
       id: 'medicamentos',

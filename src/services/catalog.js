@@ -1,7 +1,5 @@
-/** Catálogo público do FarmaVida. Não confia em alterações de preço feitas no navegador. */
 import { demoCatalog } from '../data/demoCatalog.js'
 
-/** Devolve novas estruturas no modo demonstração, evitando mutar a lista base. */
 export function createLocalCatalog() {
   return {
     async listCatalog() {
@@ -47,7 +45,6 @@ export function createRemoteCatalog(client) {
   return {
     async listCatalog() {
       if (!client) throw new Error('Configure a URL e a chave pública do Supabase no arquivo .env.')
-      // As duas consultas são públicas e respeitam RLS; nenhuma chave secreta é usada no browser.
       const [categoriesResult, productsResult] = await Promise.all([
         client.from('product_categories')
           .select('id,label,sort_order')

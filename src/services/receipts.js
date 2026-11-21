@@ -1,4 +1,3 @@
-/** Receitas médicas: dados privados, leitura por proprietário ou revisor autorizado. */
 export const RECEIPT_BUCKET = 'farmavida-receitas'
 export const MAX_RECEIPT_BYTES = 10 * 1024 * 1024
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -95,7 +94,7 @@ export function createRemoteReceipts(client, { getToken } = {}) {
   }
 }
 
-// Não grava receitas médicas no localStorage: PDFs podem conter informações pessoais.
+// PDFs não são armazenados no navegador.
 export function createLocalReceipts() {
   return {
     async listMyReceipts() { return [] },

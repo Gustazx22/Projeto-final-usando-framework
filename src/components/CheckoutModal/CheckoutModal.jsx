@@ -36,7 +36,7 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
   const [errors, setErrors] = useState({})
   const [busy, setBusy] = useState(false)
   const submitting = useRef(false)
-  const [done, setDone] = useState(null) // pedido concluído
+  const [done, setDone] = useState(null)
 
   const deliveryFee = totalPrice >= STORE.freeShippingFrom ? 0 : STORE.deliveryFee
   const total = totalPrice + deliveryFee
@@ -54,7 +54,6 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
   }
   const close = () => { onClose(); if (done) reset() }
 
-  /* ---------- validações ---------- */
   const validateStep = () => {
     const e = {}
     if (step === 1 && !selectedAddress) e.address = 'Escolha ou cadastre um endereço de entrega.'
@@ -75,7 +74,6 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
     setErrors((e) => ({ ...e, [name]: '' }))
   }
 
-  /* ---------- endereço novo ---------- */
   const saveAddress = async (data) => {
     setBusy(true)
     try {
@@ -90,7 +88,6 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
     }
   }
 
-  /* ---------- confirmar pedido ---------- */
   const confirm = async () => {
     if (submitting.current || busy || !selectedAddress || items.length === 0) return
     if (items.some((item) => item.requiresPrescription) && !receipt) {
@@ -100,7 +97,7 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
     submitting.current = true
     setBusy(true)
     try {
-      if (payment === 'cartao') await sleep(400) // processamento simulado
+      if (payment === 'cartao') await sleep(400)
       const order = await placeOrder({
         items: items.map((i) => ({ id: i.id, qtd: i.quantity })),
         addressId: selectedAddress.id,
@@ -113,7 +110,7 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
       const txid = String(order.id).replace(/[^A-Za-z0-9]/g, '').slice(0, 25)
       setDone({
         order,
-        // Montantes da confirmação vêm do banco, nunca do snapshot do carrinho.
+        // Valores confirmados são os retornados pelo banco.
         items: order.itens.map((i) => ({ id: i.id, name: i.nome, quantity: i.qtd, price: Number(i.preco) })),
         address: order.endereco,
         payment: order.pagamento,
@@ -153,7 +150,6 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
     catch { showToast('Não foi possível copiar. Selecione e copie manualmente.', 'error') }
   }
 
-  /* ======================= TELAS ======================= */
   let body
 
   if (loading) {
@@ -242,7 +238,6 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
           ))}
         </ol>
 
-        {/* ---- Passo 1: entrega ---- */}
         {step === 1 && (
           <div className="ck-section">
             {needsNewAddress ? (
@@ -280,7 +275,6 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
           </div>
         )}
 
-        {/* ---- Passo 2: pagamento ---- */}
         {step === 2 && (
           <div className="ck-section">
             <h3>Forma de pagamento</h3>
@@ -341,7 +335,6 @@ export default function CheckoutModal({ isOpen, onClose, receipt, onReceiptChang
           </div>
         )}
 
-        {/* ---- Passo 3: revisão ---- */}
         {step === 3 && selectedAddress && (
           <div className="ck-section">
             <h3>Confira seu pedido</h3>

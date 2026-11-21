@@ -41,8 +41,7 @@ export function getProductFallback(category = '', name = 'Produto FarmaVida') {
 
 export function getProductImageSrc(product) {
   const local = getLocalProductImage(product)
-  // A versão antiga do catálogo usa a mesma foto por categoria. Nesses casos,
-  // preferimos a imagem exclusiva local até a atualização SQL ser executada.
+  // Usa imagens locais quando o link está ausente ou repetido.
   if (local && (!product?.image || /images\.unsplash\.com\/photo-(1584308666744|1550572017|1576671081837|1556228578)/.test(product.image))) {
     return local
   }

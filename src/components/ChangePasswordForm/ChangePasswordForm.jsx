@@ -46,7 +46,6 @@ export default function ChangePasswordForm() {
         newPassword: form.newPassword,
         nonce: requiresCode ? form.nonce.trim() : '',
       })
-      // Evita manter senhas em estado React após a conclusão.
       setForm(EMPTY)
       setRequiresCode(false)
       showToast('Senha alterada com sucesso!', 'success')

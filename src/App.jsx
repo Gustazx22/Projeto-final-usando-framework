@@ -16,8 +16,6 @@ import PharmacistWorkspace from './components/PharmacistWorkspace/PharmacistWork
 
 function FarmaVidaPages() {
   const { isPharmacist, roleLoaded, user } = useUser()
-  // 'auto' inicia na área do farmacêutico quando a conta tem permissão.
-  // Alternar a visualização NÃO troca usuário nem sessão.
   const [view, setView] = useState({ userId: null, choice: 'auto' })
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [receipt, setReceipt] = useState(null)

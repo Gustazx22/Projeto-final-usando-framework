@@ -1,4 +1,3 @@
-/** Filtros de apresentação do catálogo (valem para Supabase e demonstração). */
 export function normalizeCatalogText(value) {
   return String(value ?? '')
     .normalize('NFD')

@@ -1,4 +1,3 @@
-/** Medidas reais do carrossel — independentes de uma largura fixa de tela. */
 export function carouselMetrics({ scrollWidth, clientWidth, cardWidth, gap }) {
   const step = Math.max(1, Number(cardWidth || 0) + Number(gap || 0))
   const maxScroll = Math.max(0, Number(scrollWidth || 0) - Number(clientWidth || 0))

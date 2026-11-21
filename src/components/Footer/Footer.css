@@ -1,7 +1,7 @@
-/* O rodapé tem duas áreas: marca e três colunas de navegação. */
+
 .footer-grid { grid-template-columns: minmax(220px, 1.1fr) minmax(0, 2.9fr); }
 .footer-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-/* Links e botões do rodapé recebem o mesmo tratamento visual. */
+
 .footer-nav .footer-col button {
   display: inline;
   width: auto;

@@ -19,7 +19,7 @@ export default function AccountModal() {
     receipts, receiptEvents, getReceiptUrl,
   } = useUser()
   const { showToast } = useToast()
-  const [editor, setEditor] = useState(null) // null | { mode: "add" } | { mode: "edit", address }
+  const [editor, setEditor] = useState(null)
   const [busy, setBusy] = useState(false)
   const [openReceipt, setOpenReceipt] = useState(null)
 

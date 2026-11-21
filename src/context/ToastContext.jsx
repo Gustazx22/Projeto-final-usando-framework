@@ -1,7 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { ToastContext } from './contexts.js'
 
-
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
 
@@ -29,7 +28,6 @@ export function ToastProvider({ children }) {
   )
 }
 
-// ToastContainer component
 function ToastContainer({ toasts, onHide }) {
   return (
     <div className="toast-container" role="region" aria-label="Notificações" aria-live="polite">
