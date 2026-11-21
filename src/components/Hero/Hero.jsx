@@ -5,14 +5,10 @@ function Hero() {
     <section className="hero" aria-labelledby="hero-title">
       <div className="container hero-grid">
         <div className="hero-content">
-          <div className="hero-badge">
-            <span className="badge-dot" aria-hidden="true"></span>
-            <span>PROJETO ACADÊMICO · AMBIENTE DE DEMONSTRAÇÃO</span>
-          </div>
           <h1 id="hero-title">Sua saúde em <span className="highlight">boas mãos</span></h1>
           <p className="hero-subtitle">
-            Protótipo acadêmico de farmácia virtual: explore produtos fictícios, simule compras e
-            envie PDFs de teste para análise farmacêutica manual. Não há dispensação ou pagamento real.
+            Plataforma de farmácia virtual para explorar produtos, realizar pedidos
+            e enviar receitas em PDF para análise farmacêutica. Não há dispensação ou pagamento real.
           </p>
           <div className="hero-actions">
             <a href="#catalog-controls" className="btn btn-primary btn-lg">Comprar agora <span aria-hidden="true">→</span></a>
@@ -21,15 +17,15 @@ function Hero() {
           <div className="hero-stats">
             <div className="stat">
               <strong>Catálogo</strong>
-              <span>demonstrativo</span>
+              <span>produtos</span>
             </div>
             <div className="stat">
               <strong>Pedidos</strong>
-              <span>simulados</span>
+              <span>acompanhamento</span>
             </div>
             <div className="stat">
               <strong>Receitas</strong>
-              <span>análise manual</span>
+              <span>análise farmacêutica</span>
             </div>
           </div>
         </div>
@@ -47,10 +43,6 @@ function Hero() {
               className="hero-img-overlay"
               loading="lazy"
             />
-            <div className="hero-price-tag">
-              <span className="price-label">FarmaVida</span>
-              <span className="price-value">Projeto <strong>demo</strong></span>
-            </div>
           </div>
         </div>
       </div>

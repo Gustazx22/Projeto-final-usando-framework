@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useCart } from '../../context/useCart.js'
 import { useToast } from '../../context/useToast.js'
 import QuickViewModal from '../QuickViewModal/QuickViewModal'
+import { getProductImageSrc, handleProductImageError } from '../../utils/productImage.js'
 import './ProductCarousel.css'
 
 export default function ProductCarousel({ id, title, products, showViewAll = false, viewAllHref = '#', onViewAll }) {
@@ -116,9 +117,10 @@ export default function ProductCarousel({ id, title, products, showViewAll = fal
                 <article key={product.id} className="product-card" role="listitem">
                   <div className="product-image">
                     <img
-                      src={product.image}
+                      src={getProductImageSrc(product)}
                       alt={product.name}
                       loading="lazy"
+                      onError={(event) => handleProductImageError(event, product)}
                       />
                     <button type="button" className="product-image-open" onClick={() => handleQuickView(product)}
                       aria-label={`Ver detalhes de ${product.name}`}>Ver detalhes</button>

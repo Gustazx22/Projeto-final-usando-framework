@@ -10,7 +10,7 @@ function Header({ onOpenWorkspace }) {
   const { totalItems, toggleCart } = useCart()
   const { user, isLoggedIn, openAuth, openAccount } = useUser()
 
-  const sectionIds = ['medicamentos', 'genericos', 'higiene', 'vitaminas', 'ofertas', 'receita']
+  const sectionIds = ['medicamentos', 'ofertas', 'receita']
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,9 +65,6 @@ function Header({ onOpenWorkspace }) {
   const navItems = [
       { label: 'Início', href: '#', icon: '🏠' },
       { label: 'Medicamentos', href: '#medicamentos', icon: '💊' },
-      { label: 'Genéricos', href: '#genericos', icon: '🧪' },
-      { label: 'Higiene', href: '#higiene', icon: '🧴' },
-      { label: 'Vitaminas', href: '#vitaminas', icon: '💪' },
       { label: 'Ofertas', href: '#ofertas', icon: '🔥' },
       { label: 'Receita', href: '#receita', icon: '📄' },
     ]
@@ -112,7 +109,7 @@ function Header({ onOpenWorkspace }) {
             {onOpenWorkspace && (
               <button type="button" className="hd-workspace-switch" onClick={onOpenWorkspace}
                 title="Abrir a área do farmacêutico" aria-label="Abrir painel farmacêutico">
-                <span aria-hidden="true">▦</span> <span className="hd-workspace-label">Painel farmacêutico</span>
+                <span aria-hidden="true">▦</span> <span className="hd-workspace-label">Painel</span>
               </button>
             )}
             {isLoggedIn ? (

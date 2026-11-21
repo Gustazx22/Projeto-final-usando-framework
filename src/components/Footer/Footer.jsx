@@ -51,8 +51,8 @@ export default function Footer() {
               </div>
             </div>
             <p className="footer-tagline">
-              Projeto desenvolvido para a disciplina de Laboratório de Desenvolvimento.
-              Produtos, preços, pagamentos e análise farmacêutica são demonstrativos.
+              Projeto desenvolvido para a disciplina de Laboratório de Desenvolvimento,
+              com foco em catálogo, pedidos e análise farmacêutica digital.
             </p>
           </div>
           <nav className="footer-nav" aria-label="Navegação do rodapé">
@@ -70,14 +70,14 @@ export default function Footer() {
             </div>
             <div className="footer-col">
               <h4>Sobre o projeto</h4>
-              <p className="footer-note">Protótipo educacional em React, Vite e Supabase. Não realiza vendas, pagamentos, entregas ou atendimento clínico.</p>
+              <p className="footer-note">Projeto acadêmico em React, Vite e Supabase, com fluxo de catálogo, pedidos e análise farmacêutica.</p>
               <p className="footer-note">Use somente dados e receitas fictícios nos testes.</p>
             </div>
           </nav>
         </div>
         <div className="footer-bottom">
           <p>© {new Date().getFullYear()} FarmaVida · Projeto acadêmico</p>
-          <p className="footer-legal">Demonstração sem CNPJ, licença sanitária ou farmacêutico responsável reais.</p>
+          <p className="footer-legal">Projeto acadêmico apresentado para fins educacionais.</p>
         </div>
       </div>
     </footer>

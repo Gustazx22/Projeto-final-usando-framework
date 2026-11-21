@@ -1,6 +1,7 @@
 import { useCart } from '../../context/useCart.js'
 import { useEffect, useRef, useState } from 'react'
 import './QuickViewModal.css'
+import { getProductImageSrc, handleProductImageError } from '../../utils/productImage.js'
 
 export default function QuickViewModal({ product, isOpen, onClose }) {
   const { addItem } = useCart()
@@ -73,7 +74,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
         <div className="modal-body quick-view-body">
           <div className="quick-view-grid">
             <div className="quick-view-image">
-              <img src={product.image} alt={product.name} loading="eager" />
+              <img src={getProductImageSrc(product)} alt={product.name} loading="eager" onError={(event) => handleProductImageError(event, product)} />
               {product.badge && (
                 <span className={`badge badge-${product.badge}`}>
                   {product.badge === 'new' && 'Novo'}
@@ -156,7 +157,7 @@ export default function QuickViewModal({ product, isOpen, onClose }) {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
-                  <span>Pedido demonstrativo</span>
+                  <span>Pedido online</span>
                 </div>
                 <div className="meta-item">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">

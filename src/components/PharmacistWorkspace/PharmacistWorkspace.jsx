@@ -9,7 +9,7 @@ import './PharmacistWorkspace.css'
 const ORDER_STATUS = {
   pendente: 'Pendente',
   aguardando_pagamento: 'Aguardando pagamento',
-  pago: 'Pagamento simulado',
+  pago: 'Pago',
   aguardando_analise: 'Aguardando análise',
   receita_aprovada: 'Receita aprovada',
   receita_rejeitada: 'Receita rejeitada',
@@ -61,7 +61,7 @@ function OrdersChart({ days }) {
           </div>
         ))}
       </div>
-      <p className="ph-chart-note">Exibição demonstrativa, baseada nos pedidos cadastrados no Supabase.</p>
+      <p className="ph-chart-note">Indicadores atualizados com base nos pedidos cadastrados no sistema.</p>
     </section>
   )
 }
@@ -108,7 +108,7 @@ function Dashboard({ stats, statsLoading, statsError, queue, onRefresh, onGoRece
     <div className="ph-dashboard">
       <div className="ph-kpis">
         <SummaryCard label="Pedidos cadastrados" value={stats.orders_total} glyph="▣" detail={`${stats.orders_last_30_days} nos últimos 30 dias`} />
-        <SummaryCard label="Valor dos pedidos" value={formatBRL(stats.orders_value)} glyph="↗" detail="Simulado, sem pagamento real" />
+        <SummaryCard label="Valor dos pedidos" value={formatBRL(stats.orders_value)} glyph="↗" detail="Total acumulado dos pedidos registrados" />
         <SummaryCard label="Receitas pendentes" value={stats.pending_receipts} glyph="◷" detail="Aguardando decisão manual" emphasis />
         <SummaryCard label="Receitas analisadas" value={stats.approved_receipts + stats.rejected_receipts} glyph="✓" detail={`${stats.approved_receipts} aprovadas · ${stats.rejected_receipts} rejeitadas`} />
       </div>
@@ -135,7 +135,7 @@ function Dashboard({ stats, statsLoading, statsError, queue, onRefresh, onGoRece
           </div>
         )}
       </section>
-      <p className="ph-disclaimer">Projeto acadêmico: os valores e as movimentações são simulações. Este painel não representa faturamento, dispensação ou atividades farmacêuticas reais.</p>
+      <p className="ph-disclaimer">Painel acadêmico de acompanhamento interno para pedidos e receitas cadastrados na plataforma.</p>
     </div>
   )
 }
@@ -225,7 +225,7 @@ export default function PharmacistWorkspace({ onViewStore }) {
       </aside>
       <div className="ph-content-wrap">
         <header className="ph-topbar">
-          <div><span className="ph-context">ÁREA RESTRITA · AMBIENTE DE DEMONSTRAÇÃO</span><p>Painel de gestão FarmaVida</p></div>
+          <div><span className="ph-context">ÁREA RESTRITA · GESTÃO FARMACÊUTICA</span><p>Painel de gestão FarmaVida</p></div>
           <div className="ph-top-actions">
             <button type="button" className="ph-btn ph-btn-soft" onClick={() => openAccount('dados')}>Minha conta</button>
             <button type="button" className="ph-btn ph-btn-primary" onClick={onViewStore}>Ver loja do cliente <span aria-hidden="true">↗</span></button>
@@ -252,7 +252,7 @@ export default function PharmacistWorkspace({ onViewStore }) {
               {dataError && <p className="ph-inline-error" role="alert">{dataError}</p>}
               <ReceiptReviewPanel queue={filteredQueue} onReview={handleReview} getReceiptUrl={getReceiptUrl}
                 onRefresh={refreshAll} loading={dataLoading} />
-              <p className="ph-disclaimer">A fila mostra até 100 registros recentes, conforme a função protegida do Supabase. Utilize somente documentos fictícios neste projeto acadêmico.</p>
+              <p className="ph-disclaimer">A fila mostra os registros recentes conforme a função protegida do Supabase.</p>
             </div>
           )}
         </main>
