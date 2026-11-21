@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { db } from '../services/db'
 
 const UserContext = createContext(undefined)
@@ -8,80 +8,128 @@ export function UserProvider({ children }) {
   const [addresses, setAddresses] = useState([])
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
+  const [authError, setAuthError] = useState('')
+  const [dataError, setDataError] = useState('')
+  const [dataLoading, setDataLoading] = useState(false)
+  const userRef = useRef(null)
+  const dataRequest = useRef(0)
+  const authRevision = useRef(0)
+  const alive = useRef(false)
   const [authOpen, setAuthOpen] = useState(false)
   const [authTab, setAuthTab] = useState('login')
   const [accountOpen, setAccountOpen] = useState(false)
   const [accountTab, setAccountTab] = useState('dados')
 
-  const loadData = useCallback(async () => {
-    const [addr, ord] = await Promise.all([db.listAddresses(), db.listOrders()])
-    setAddresses(addr)
-    setOrders(ord)
+  // O login independe das tabelas de endereços/pedidos. Uma falha nelas não
+  // pode transformar uma autenticação bem-sucedida em "senha incorreta".
+  const loadData = useCallback(async (userId) => {
+    if (!alive.current || !userId || userRef.current?.id !== userId) return
+    const request = ++dataRequest.current
+    setDataLoading(true)
+    setDataError('')
+    const [addr, ord] = await Promise.allSettled([db.listAddresses(), db.listOrders()])
+    if (!alive.current || request !== dataRequest.current || userRef.current?.id !== userId) return
+    setAddresses(addr.status === 'fulfilled' ? addr.value : [])
+    setOrders(ord.status === 'fulfilled' ? ord.value : [])
+    if (addr.status === 'rejected' || ord.status === 'rejected') {
+      setDataError('Sua conta está conectada, mas não foi possível carregar todos os endereços ou pedidos. Tente novamente.')
+    }
+    setDataLoading(false)
   }, [])
 
-  // Restaura a sessão ao abrir o site
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        const u = await db.restore()
-        if (cancelled) return
-        if (u) { setUser(u); await loadData() }
-      } catch { /* sem sessão */ }
-      if (!cancelled) setLoading(false)
-    })()
-    return () => { cancelled = true }
+  const applyUser = useCallback((nextUser) => {
+    if (!alive.current) return
+    const changed = userRef.current?.id !== nextUser?.id
+    userRef.current = nextUser
+    setUser(nextUser)
+    setLoading(false)
+    setAuthError('')
+    if (changed || !nextUser) {
+      ++dataRequest.current
+      setAddresses([])
+      setOrders([])
+      setDataError('')
+      setDataLoading(Boolean(nextUser))
+      if (!nextUser) setAccountOpen(false)
+      // O callback do Auth termina antes de iniciar outras chamadas ao SDK.
+      if (nextUser) queueMicrotask(() => { void loadData(nextUser.id) })
+    }
   }, [loadData])
+
+  useEffect(() => {
+    let active = true
+    alive.current = true
+    const unsubscribe = db.subscribeAuth((nextUser) => {
+      if (!active) return
+      ++authRevision.current
+      applyUser(nextUser)
+    })
+    const revision = authRevision.current
+    void db.restore().then((restored) => {
+      if (active && revision === authRevision.current) applyUser(restored)
+    }).catch((error) => {
+      if (active && revision === authRevision.current) {
+        setAuthError(error.message || 'Não foi possível restaurar sua sessão. Tente entrar novamente.')
+        setLoading(false)
+      }
+    })
+    return () => {
+      active = false
+      alive.current = false
+      dataRequest.current += 1
+      unsubscribe()
+    }
+  }, [applyUser])
 
   const register = useCallback(async (data) => {
-    const result = await db.signUp(data)
-    if (result.user) {
-      setUser(result.user)
-      await loadData()
-    }
-    return result
-  }, [loadData])
+    setAuthError('')
+    return db.signUp(data)
+  }, [])
 
   const login = useCallback(async (credentials) => {
-    const u = await db.signIn(credentials)
-    setUser(u)
-    await loadData()
-    return u
-  }, [loadData])
+    setAuthError('')
+    return db.signIn(credentials)
+  }, [])
 
   const logout = useCallback(async () => {
     await db.signOut()
-    setUser(null)
-    setAddresses([])
-    setOrders([])
-    setAccountOpen(false)
   }, [])
 
+  const reloadAccountData = useCallback(() => loadData(userRef.current?.id), [loadData])
+
   const addAddress = useCallback(async (address) => {
+    const owner = userRef.current?.id
     const created = await db.addAddress({ ...address, isDefault: address.isDefault || addresses.length === 0 })
-    setAddresses(await db.listAddresses())
+    const list = await db.listAddresses()
+    if (alive.current && owner === userRef.current?.id) setAddresses(list)
     return created
   }, [addresses.length])
 
   const removeAddress = useCallback(async (id) => {
+    const owner = userRef.current?.id
     await db.removeAddress(id)
     const list = await db.listAddresses()
+    if (!alive.current || owner !== userRef.current?.id) return
     if (list.length > 0 && !list.some((a) => a.isDefault)) {
       await db.setDefaultAddress(list[0].id)
-      setAddresses(await db.listAddresses())
+      const updated = await db.listAddresses()
+      if (alive.current && owner === userRef.current?.id) setAddresses(updated)
     } else {
       setAddresses(list)
     }
   }, [])
 
   const setDefaultAddress = useCallback(async (id) => {
+    const owner = userRef.current?.id
     await db.setDefaultAddress(id)
-    setAddresses(await db.listAddresses())
+    const list = await db.listAddresses()
+    if (alive.current && owner === userRef.current?.id) setAddresses(list)
   }, [])
 
   const placeOrder = useCallback(async (order) => {
+    const owner = userRef.current?.id
     const created = await db.createOrder(order)
-    setOrders((prev) => [created, ...prev])
+    if (alive.current && owner === userRef.current?.id) setOrders((prev) => [created, ...prev])
     return created
   }, [])
 
@@ -93,7 +141,7 @@ export function UserProvider({ children }) {
   const value = useMemo(() => ({
     user,
     isLoggedIn: !!user,
-    loading,
+    loading, authError, dataError, dataLoading, reloadAccountData,
     register,
     login,
     logout,
@@ -106,7 +154,7 @@ export function UserProvider({ children }) {
     placeOrder,
     authOpen, authTab, setAuthTab, openAuth, closeAuth,
     accountOpen, accountTab, setAccountTab, openAccount, closeAccount,
-  }), [user, loading, register, login, logout, addresses, addAddress, removeAddress, setDefaultAddress,
+  }), [user, loading, authError, dataError, dataLoading, reloadAccountData, register, login, logout, addresses, addAddress, removeAddress, setDefaultAddress,
     orders, placeOrder, authOpen, authTab, openAuth, closeAuth, accountOpen, accountTab, openAccount, closeAccount])
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>

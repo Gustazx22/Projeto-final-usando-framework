@@ -50,12 +50,12 @@ function Categories() {
       id: 'higiene',
       label: 'Higiene e Beleza',
       products: [
-        { id: 3, name: 'Protetor Solar FPS 50', category: 'higiene', price: 45.90, image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d79b?w=300&q=80', badge: 'sale', description: 'UVA/UVB resistente à água' },
-        { id: 6, name: 'Shampoo Anticaspa', category: 'higiene', price: 28.90, image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d79b?w=300&q=80', badge: null, description: 'Caspa e seborreia' },
-        { id: 21, name: 'Hidratante Corporal', category: 'higiene', price: 35.90, image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d79b?w=300&q=80', badge: 'new', description: 'Pele seca e sensível' },
-        { id: 22, name: 'Sabonete Líquido Neutro', category: 'higiene', price: 18.90, image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d79b?w=300&q=80', badge: null, description: 'Limpeza suave diária' },
-        { id: 23, name: 'Creme Dental Clareador', category: 'higiene', price: 14.90, image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d79b?w=300&q=80', badge: 'bestseller', description: 'Branqueamento gradual' },
-        { id: 24, name: 'Desodorante Roll-on 48h', category: 'higiene', price: 22.90, image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d79b?w=300&q=80', badge: null, description: 'Proteção prolongada' },
+        { id: 3, name: 'Protetor Solar FPS 50', category: 'higiene', price: 45.90, image: '/products/higiene/protetor-solar.svg', badge: 'sale', description: 'UVA/UVB resistente à água' },
+        { id: 6, name: 'Shampoo Anticaspa', category: 'higiene', price: 28.90, image: '/products/higiene/shampoo-anticaspa.svg', badge: null, description: 'Caspa e seborreia' },
+        { id: 21, name: 'Hidratante Corporal', category: 'higiene', price: 35.90, image: '/products/higiene/hidratante-corporal.svg', badge: 'new', description: 'Pele seca e sensível' },
+        { id: 22, name: 'Sabonete Líquido Neutro', category: 'higiene', price: 18.90, image: '/products/higiene/sabonete-liquido.svg', badge: null, description: 'Limpeza suave diária' },
+        { id: 23, name: 'Creme Dental Clareador', category: 'higiene', price: 14.90, image: '/products/higiene/creme-dental.svg', badge: 'bestseller', description: 'Branqueamento gradual' },
+        { id: 24, name: 'Desodorante Roll-on 48h', category: 'higiene', price: 22.90, image: '/products/higiene/desodorante-roll-on.svg', badge: null, description: 'Proteção prolongada' },
       ]
     },
     {

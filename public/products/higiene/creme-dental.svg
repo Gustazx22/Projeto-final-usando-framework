@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800" role="img">
+ 
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#e1f6f5"/>
+    <stop offset="1" stop-color="#eaf4fa"/>
+  </linearGradient>
+  <linearGradient id="white" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#e8f1ec"/><stop offset=".25" stop-color="#ffffff"/><stop offset=".78" stop-color="#ffffff"/><stop offset="1" stop-color="#dce8e3"/>
+  </linearGradient>
+  <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#5ad9b8"/><stop offset=".5" stop-color="#09a685"/><stop offset="1" stop-color="#036d62"/>
+  </linearGradient>
+  <linearGradient id="blue" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#195b82"/><stop offset=".25" stop-color="#218eaa"/><stop offset=".73" stop-color="#41bed2"/><stop offset="1" stop-color="#176c8b"/>
+  </linearGradient>
+  <linearGradient id="amber" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#f5c445"/><stop offset=".25" stop-color="#ffe9a1"/><stop offset=".7" stop-color="#ffe06c"/><stop offset="1" stop-color="#edb12f"/>
+  </linearGradient>
+  <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="16"/>
+  </filter>
+  <filter id="softshadow" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="12" stdDeviation="17" flood-color="#1e5346" flood-opacity=".24"/>
+  </filter>
+</defs>
+
+ <rect width="600" height="800" fill="url(#bg)"/>
+ <circle cx="510" cy="120" r="195" fill="#fff" opacity=".3"/>
+ <circle cx="70" cy="675" r="210" fill="#fff" opacity=".24"/>
+ <path d="M0 690 C130 650, 270 680, 600 625 V800 H0" fill="#fff" opacity=".35"/>
+ <ellipse cx="300" cy="693" rx="160" ry="27" fill="#1b6257" opacity=".18" filter="url(#shadow)"/>
+ <g filter="url(#softshadow)" transform="rotate(-9 300 410)">
+ <path d="M234 190 L366 190 L389 604 Q390 629 374 637 H226 Q211 628 212 604Z" fill="url(#white)" stroke="#d6e7e8" stroke-width="4"/>
+ <rect x="223" y="629" width="154" height="40" rx="8" fill="#d2e6e9" stroke="#9bbabe" stroke-width="4"/>
+ <path d="M227 430 Q302 375 381 423 L383 538 Q301 498 218 548Z" fill="url(#teal)" />
+ <path d="M228 521 Q305 476 382 506" fill="none" stroke="#fff" stroke-width="11" stroke-opacity=".72"/>
+ <circle cx="301" cy="294" r="31" fill="#daf6f1"/>
+ <path d="M289 282 l12 28 l14 -31" stroke="#25ae98" fill="none" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+ <text x="300" y="364" fill="#155f60" font-family="Arial, sans-serif" font-size="25" font-weight="700" text-anchor="middle" letter-spacing="0">CREME</text><text x="300" y="397" fill="#155f60" font-family="Arial, sans-serif" font-size="30" font-weight="700" text-anchor="middle" letter-spacing="0">DENTAL</text><text x="300" y="470" fill="#fff" font-family="Arial, sans-serif" font-size="21" font-weight="700" text-anchor="middle" letter-spacing="0">CLAREADOR</text><text x="300" y="581" fill="#0c7d70" font-family="Arial, sans-serif" font-size="15" font-weight="700" text-anchor="middle" letter-spacing="0">SABOR MENTA</text></g>
+ </svg>

@@ -1,0 +1,48 @@
+
+
+COMO APLICAR
+
+1. No terminal da raiz do projeto, execute:
+
+   npm ci
+   npm test
+   npm run dev
+
+   Utilize http://localhost:5173/. Reinicie o Vite depois de alterar .env.
+   Se a porta 5173 estiver ocupada, encerre a instância anterior ou configure
+   no Supabase a URL correspondente à porta efetivamente utilizada.
+   O arquivo de dependências do projeto exige versões recentes do Node;
+   Node 24 LTS é compatível com os requisitos registrados no package-lock.
+   Esta entrega foi testada com Node 26.13.1 e npm 11.20.0.
+
+CONFIGURAÇÃO NO SUPABASE
+A consulta somente de leitura a /auth/v1/settings respondeu HTTP 200 com a
+URL e a chave informadas. O provedor de e-mail e os cadastros estão habilitados;
+a confirmação de e-mail está ATIVADA.
+
+No painel do seu projeto, confira Authentication > URL Configuration:
+- Site URL para desenvolvimento: http://localhost:5173/
+- Redirect URLs: http://localhost:5173/ e http://127.0.0.1:5173/
+- Ao publicar, inclua a URL exata do site e ajuste o Site URL para produção.
+
+COMO TESTAR
+1. Abra Entrar > Criar conta. Use um e-mail de teste que você controla,
+   nome completo, telefone e CPF de teste válido para o validador existente.
+   Não use dados de pacientes nem cartões reais.
+2. Cadastre-se. Com confirmação habilitada, deve aparecer a orientação para
+   verificar o e-mail; o cabeçalho ainda deve mostrar Entrar.
+3. Confirme pelo link recebido, com o servidor local em execução. O SDK pode
+   restaurar a sessão no retorno. Se necessário, entre com e-mail e senha.
+4. Confirme que Minha conta apresenta os dados do usuário.
+5. Recarregue a página. A sessão deve ser restaurada.
+6. Abra uma segunda aba no mesmo endereço. Saia na primeira e verifique que
+   a segunda também volta a mostrar Entrar.
+7. Tente uma senha incorreta e verifique a mensagem, sem autenticação.
+8. Se endereços/pedidos falharem, confirme que a conta permanece conectada e
+   o aviso é exibido em Minha conta. Esse aviso não significa senha incorreta.
+9. Para testar demonstração, remova temporariamente as configurações do seu
+   .env e .env.local, reinicie o Vite e confirme o aviso de modo demonstração.
+   Contas locais não são migradas para o Supabase; os dois modos são separados.
+
+
+

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800" role="img">
+ 
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#e9f7e9"/>
+    <stop offset="1" stop-color="#f7f4ed"/>
+  </linearGradient>
+  <linearGradient id="white" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#e8f1ec"/><stop offset=".25" stop-color="#ffffff"/><stop offset=".78" stop-color="#ffffff"/><stop offset="1" stop-color="#dce8e3"/>
+  </linearGradient>
+  <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#5ad9b8"/><stop offset=".5" stop-color="#09a685"/><stop offset="1" stop-color="#036d62"/>
+  </linearGradient>
+  <linearGradient id="blue" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#195b82"/><stop offset=".25" stop-color="#218eaa"/><stop offset=".73" stop-color="#41bed2"/><stop offset="1" stop-color="#176c8b"/>
+  </linearGradient>
+  <linearGradient id="amber" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#f5c445"/><stop offset=".25" stop-color="#ffe9a1"/><stop offset=".7" stop-color="#ffe06c"/><stop offset="1" stop-color="#edb12f"/>
+  </linearGradient>
+  <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="16"/>
+  </filter>
+  <filter id="softshadow" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="12" stdDeviation="17" flood-color="#1e5346" flood-opacity=".24"/>
+  </filter>
+</defs>
+
+ <rect width="600" height="800" fill="url(#bg)"/>
+ <circle cx="510" cy="120" r="195" fill="#fff" opacity=".3"/>
+ <circle cx="70" cy="675" r="210" fill="#fff" opacity=".24"/>
+ <path d="M0 690 C130 650, 270 680, 600 625 V800 H0" fill="#fff" opacity=".35"/>
+ <ellipse cx="300" cy="693" rx="160" ry="27" fill="#1b6257" opacity=".18" filter="url(#shadow)"/>
+ <g filter="url(#softshadow)">
+ <rect x="283" y="128" width="37" height="72" rx="8" fill="#f6fcf9" stroke="#aabeb6" stroke-width="3"/>
+ <path d="M303 141 H369 Q385 141 385 155 Q384 164 366 164 H316" stroke="#e4f0eb" stroke-width="20" fill="none" stroke-linecap="round"/>
+ <rect x="248" y="188" width="103" height="39" rx="13" fill="#f0f6f2"/>
+ <rect x="204" y="218" width="192" height="432" rx="59" fill="url(#white)" stroke="#d6e7df" stroke-width="4"/>
+ <rect x="219" y="355" width="162" height="194" rx="15" fill="#dff5e9"/>
+ <path d="M243 389 Q306 365 355 391" stroke="#7bc2a2" stroke-width="4" fill="none"/>
+ <path d="M278 434 q22 -34 44 0 q-22 35 -44 0" fill="#5baa87" />
+ <text x="300" y="485" fill="#266f58" font-family="Arial, sans-serif" font-size="21" font-weight="700" text-anchor="middle" letter-spacing="0">HIDRATANTE</text><text x="300" y="514" fill="#266f58" font-family="Arial, sans-serif" font-size="22" font-weight="700" text-anchor="middle" letter-spacing="0">CORPORAL</text><text x="300" y="543" fill="#5f8e78" font-family="Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="0">PELE MACIA</text><text x="300" y="603" fill="#438874" font-family="Arial, sans-serif" font-size="20" font-weight="700" text-anchor="middle" letter-spacing="0">400 ml</text></g>
+ </svg>

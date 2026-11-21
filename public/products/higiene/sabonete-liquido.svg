@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800" role="img">
+ 
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ddfaeb"/>
+    <stop offset="1" stop-color="#e7faf6"/>
+  </linearGradient>
+  <linearGradient id="white" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#e8f1ec"/><stop offset=".25" stop-color="#ffffff"/><stop offset=".78" stop-color="#ffffff"/><stop offset="1" stop-color="#dce8e3"/>
+  </linearGradient>
+  <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#5ad9b8"/><stop offset=".5" stop-color="#09a685"/><stop offset="1" stop-color="#036d62"/>
+  </linearGradient>
+  <linearGradient id="blue" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#195b82"/><stop offset=".25" stop-color="#218eaa"/><stop offset=".73" stop-color="#41bed2"/><stop offset="1" stop-color="#176c8b"/>
+  </linearGradient>
+  <linearGradient id="amber" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#f5c445"/><stop offset=".25" stop-color="#ffe9a1"/><stop offset=".7" stop-color="#ffe06c"/><stop offset="1" stop-color="#edb12f"/>
+  </linearGradient>
+  <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="16"/>
+  </filter>
+  <filter id="softshadow" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="12" stdDeviation="17" flood-color="#1e5346" flood-opacity=".24"/>
+  </filter>
+</defs>
+
+ <rect width="600" height="800" fill="url(#bg)"/>
+ <circle cx="510" cy="120" r="195" fill="#fff" opacity=".3"/>
+ <circle cx="70" cy="675" r="210" fill="#fff" opacity=".24"/>
+ <path d="M0 690 C130 650, 270 680, 600 625 V800 H0" fill="#fff" opacity=".35"/>
+ <ellipse cx="300" cy="693" rx="160" ry="27" fill="#1b6257" opacity=".18" filter="url(#shadow)"/>
+ <g filter="url(#softshadow)">
+ <rect x="276" y="124" width="48" height="91" rx="10" fill="#e1f0eb" stroke="#8bbcac" stroke-width="4"/>
+ <path d="M288 139 H366 Q384 139 385 154 Q384 171 368 171 H324" stroke="#bfe8d9" stroke-width="21" stroke-linecap="round" fill="none"/>
+ <rect x="206" y="208" width="188" height="437" rx="44" fill="url(#teal)" stroke="#078b72" stroke-width="4"/>
+ <path d="M225 234 v352" stroke="#dffff1" stroke-opacity=".24" stroke-width="15" stroke-linecap="round"/>
+ <rect x="227" y="340" width="146" height="207" rx="22" fill="#f0fff9" opacity=".96"/>
+ <circle cx="285" cy="377" r="14" fill="none" stroke="#87cfc0" stroke-width="5"/>
+ <circle cx="317" cy="390" r="21" fill="none" stroke="#a4e1d1" stroke-width="5"/>
+ <circle cx="333" cy="359" r="9" fill="none" stroke="#70bead" stroke-width="4"/>
+ <text x="300" y="460" fill="#16745e" font-family="Arial, sans-serif" font-size="22" font-weight="700" text-anchor="middle" letter-spacing="0">SABONETE</text><text x="300" y="489" fill="#16745e" font-family="Arial, sans-serif" font-size="23" font-weight="700" text-anchor="middle" letter-spacing="0">LÍQUIDO</text><text x="300" y="522" fill="#6daa96" font-family="Arial, sans-serif" font-size="15" font-weight="700" text-anchor="middle" letter-spacing="0">NEUTRO</text><text x="300" y="601" fill="#f2fff8" font-family="Arial, sans-serif" font-size="19" font-weight="700" text-anchor="middle" letter-spacing="0">250 ml</text></g>
+ </svg>

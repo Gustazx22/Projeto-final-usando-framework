@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800" role="img">
+ 
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#def3f4"/>
+    <stop offset="1" stop-color="#e6f8f3"/>
+  </linearGradient>
+  <linearGradient id="white" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#e8f1ec"/><stop offset=".25" stop-color="#ffffff"/><stop offset=".78" stop-color="#ffffff"/><stop offset="1" stop-color="#dce8e3"/>
+  </linearGradient>
+  <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#5ad9b8"/><stop offset=".5" stop-color="#09a685"/><stop offset="1" stop-color="#036d62"/>
+  </linearGradient>
+  <linearGradient id="blue" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#195b82"/><stop offset=".25" stop-color="#218eaa"/><stop offset=".73" stop-color="#41bed2"/><stop offset="1" stop-color="#176c8b"/>
+  </linearGradient>
+  <linearGradient id="amber" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#f5c445"/><stop offset=".25" stop-color="#ffe9a1"/><stop offset=".7" stop-color="#ffe06c"/><stop offset="1" stop-color="#edb12f"/>
+  </linearGradient>
+  <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="16"/>
+  </filter>
+  <filter id="softshadow" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="12" stdDeviation="17" flood-color="#1e5346" flood-opacity=".24"/>
+  </filter>
+</defs>
+
+ <rect width="600" height="800" fill="url(#bg)"/>
+ <circle cx="510" cy="120" r="195" fill="#fff" opacity=".3"/>
+ <circle cx="70" cy="675" r="210" fill="#fff" opacity=".24"/>
+ <path d="M0 690 C130 650, 270 680, 600 625 V800 H0" fill="#fff" opacity=".35"/>
+ <ellipse cx="300" cy="693" rx="160" ry="27" fill="#1b6257" opacity=".18" filter="url(#shadow)"/>
+ <g filter="url(#softshadow)">
+ <rect x="238" y="142" width="124" height="70" rx="15" fill="#ecf2f4" stroke="#a0bac0" stroke-width="4"/>
+ <path d="M219 215 Q226 192 247 192 H353 Q375 192 381 215 L408 593 Q408 654 351 654 H249 Q192 654 192 593Z" fill="url(#blue)" stroke="#27788e" stroke-width="3"/>
+ <path d="M233 238 C204 334 216 450 219 576" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="17" stroke-linecap="round"/>
+ <rect x="226" y="308" width="149" height="235" rx="23" fill="#ecfcfa" opacity=".94"/>
+ <path d="M255 350 Q300 320 345 350" stroke="#36a9c3" fill="none" stroke-width="5"/>
+ <circle cx="300" cy="398" r="27" fill="#89deda"/>
+ <path d="M285 399 q18 -23 31 0 q-18 25 -31 0" fill="#167c82"/>
+ <text x="300" y="460" fill="#155b6c" font-family="Arial, sans-serif" font-size="20" font-weight="700" text-anchor="middle" letter-spacing="0">SHAMPOO</text><text x="300" y="495" fill="#126f7e" font-family="Arial, sans-serif" font-size="22" font-weight="700" text-anchor="middle" letter-spacing="0">ANTICASPA</text><text x="300" y="525" fill="#3f7880" font-family="Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="0">CUIDADO DIÁRIO</text><text x="300" y="610" fill="#e9ffff" font-family="Arial, sans-serif" font-size="21" font-weight="700" text-anchor="middle" letter-spacing="0">350 ml</text></g>
+ </svg>

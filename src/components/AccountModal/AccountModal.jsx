@@ -14,6 +14,7 @@ export default function AccountModal() {
   const {
     user, accountOpen, accountTab, setAccountTab, closeAccount, logout,
     addresses, addAddress, removeAddress, setDefaultAddress, orders,
+    dataError, dataLoading, reloadAccountData,
   } = useUser()
   const { showToast } = useToast()
   const [adding, setAdding] = useState(false)
@@ -50,6 +51,14 @@ export default function AccountModal() {
           </button>
         ))}
       </div>
+
+      {dataLoading && <p className="fv-hint" role="status">Carregando dados da conta…</p>}
+      {dataError && (
+        <div className="fv-alert" role="alert">
+          <p>{dataError}</p>
+          <button type="button" className="btn btn-outline btn-sm" disabled={dataLoading} onClick={reloadAccountData}>Tentar novamente</button>
+        </div>
+      )}
 
       {accountTab === 'dados' && (
         <div className="ac-profile">

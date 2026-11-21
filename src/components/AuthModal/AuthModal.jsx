@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useUser } from '../../context/UserContext'
 import { useToast } from '../../context/ToastContext'
 import { isRemote } from '../../services/db'
@@ -8,12 +8,13 @@ import Modal from '../ui/Modal'
 const EMPTY = { nome: '', email: '', telefone: '', cpf: '', password: '', confirm: '' }
 
 export default function AuthModal() {
-  const { authOpen, authTab, setAuthTab, closeAuth, login, register } = useUser()
+  const { authOpen, authTab, setAuthTab, closeAuth, login, register, loading, authError } = useUser()
   const { showToast } = useToast()
   const [form, setForm] = useState(EMPTY)
   const [errors, setErrors] = useState({})
   const [serverError, setServerError] = useState('')
   const [busy, setBusy] = useState(false)
+  const submitting = useRef(false)
   const [confirmEmail, setConfirmEmail] = useState(false)
 
   const isLogin = authTab === 'login'
@@ -26,7 +27,9 @@ export default function AuthModal() {
 
   const switchTab = (tab) => { setAuthTab(tab); setErrors({}); setServerError(''); setConfirmEmail(false) }
 
-  const close = () => { closeAuth(); setForm(EMPTY); setErrors({}); setServerError(''); setConfirmEmail(false) }
+  const resetAndClose = () => { closeAuth(); setForm(EMPTY); setErrors({}); setServerError(''); setConfirmEmail(false) }
+
+  const close = () => { if (!submitting.current) resetAndClose() }
 
   const validate = () => {
     const e = {}
@@ -44,29 +47,32 @@ export default function AuthModal() {
 
   const submit = async (ev) => {
     ev.preventDefault()
-    if (!validate()) return
+    if (submitting.current || loading || !validate()) return
+    submitting.current = true
     setBusy(true)
     setServerError('')
     try {
       if (isLogin) {
-        const u = await login({ email: form.email, password: form.password })
+        const u = await login({ email: form.email.trim(), password: form.password })
         showToast(`Bem-vindo(a), ${u.nome.split(' ')[0] || 'cliente'}!`, 'success')
-        close()
+        resetAndClose()
       } else {
         const result = await register({
           email: form.email.trim(), password: form.password,
           nome: form.nome.trim(), telefone: form.telefone, cpf: form.cpf,
         })
         if (result.needsConfirmation) {
+          setForm((f) => ({ ...f, password: '', confirm: '' }))
           setConfirmEmail(true)
         } else {
           showToast('Conta criada com sucesso!', 'success')
-          close()
+          resetAndClose()
         }
       }
     } catch (err) {
       setServerError(err.message || 'Algo deu errado. Tente novamente.')
     } finally {
+      submitting.current = false
       setBusy(false)
     }
   }
@@ -75,11 +81,13 @@ export default function AuthModal() {
     <div className={`fv-field ${errors[name] ? 'fv-invalid' : ''}`}>
       <label htmlFor={`auth-${name}`}>{label}</label>
       <input
-        id={`auth-${name}`} value={form[name]}
+        id={`auth-${name}`} value={form[name]} disabled={busy || loading}
+        aria-invalid={Boolean(errors[name])}
+        aria-describedby={errors[name] ? `auth-${name}-error` : undefined}
         onChange={(e) => set(name, mask ? mask(e.target.value) : e.target.value)}
         {...props}
       />
-      {errors[name] && <span className="fv-error">{errors[name]}</span>}
+      {errors[name] && <span id={`auth-${name}-error`} className="fv-error">{errors[name]}</span>}
     </div>
   )
 
@@ -94,15 +102,15 @@ export default function AuthModal() {
       {confirmEmail ? (
         <div className="fv-form">
           <div className="fv-alert fv-ok">
-            Conta criada! Enviamos um e-mail de confirmação para <strong>{form.email}</strong>. Depois de confirmar, é só entrar.
+            Confira a caixa de entrada e o spam de <strong>{form.email}</strong>. Se houver uma confirmação de cadastro pendente, use o link recebido antes de entrar. Se já tiver uma conta, use seu login.
           </div>
           <button type="button" className="btn btn-primary" onClick={() => switchTab('login')}>Ir para o login</button>
         </div>
       ) : (
         <>
           <div className="fv-tabs" role="tablist">
-            <button type="button" role="tab" aria-selected={isLogin} className={`fv-tab ${isLogin ? 'active' : ''}`} onClick={() => switchTab('login')}>Entrar</button>
-            <button type="button" role="tab" aria-selected={!isLogin} className={`fv-tab ${!isLogin ? 'active' : ''}`} onClick={() => switchTab('register')}>Criar conta</button>
+            <button type="button" role="tab" disabled={busy || loading} aria-selected={isLogin} className={`fv-tab ${isLogin ? 'active' : ''}`} onClick={() => switchTab('login')}>Entrar</button>
+            <button type="button" role="tab" disabled={busy || loading} aria-selected={!isLogin} className={`fv-tab ${!isLogin ? 'active' : ''}`} onClick={() => switchTab('register')}>Criar conta</button>
           </div>
 
           <form className="fv-form" onSubmit={submit} noValidate>
@@ -117,10 +125,10 @@ export default function AuthModal() {
             {field('password', 'Senha', { type: 'password', placeholder: 'Mínimo 6 caracteres', autoComplete: isLogin ? 'current-password' : 'new-password' })}
             {!isLogin && field('confirm', 'Confirmar senha', { type: 'password', autoComplete: 'new-password' })}
 
-            {serverError && <div className="fv-alert" role="alert">{serverError}</div>}
+            {(serverError || authError) && <div className="fv-alert" role="alert">{serverError || authError}</div>}
 
-            <button type="submit" className="btn btn-primary btn-lg btn-full" disabled={busy}>
-              {busy ? 'Aguarde…' : isLogin ? 'Entrar' : 'Criar minha conta'}
+            <button type="submit" className="btn btn-primary btn-lg btn-full" disabled={busy || loading}>
+              {busy || loading ? 'Aguarde…' : isLogin ? 'Entrar' : 'Criar minha conta'}
             </button>
 
             {!isRemote && (

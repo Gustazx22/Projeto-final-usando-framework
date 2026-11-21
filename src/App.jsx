@@ -5,7 +5,6 @@ import Header from './components/Header/Header'
 import Hero from './components/Hero/Hero'
 import Benefits from './components/Benefits/Benefits'
 import Categories from './components/Categories/Categories'
-import WhatsAppGroup from './components/WhatsAppGroup/WhatsAppGroup'
 import Footer from './components/Footer/Footer'
 import CartDrawer from './components/CartDrawer/CartDrawer'
 import CheckoutModal from './components/CheckoutModal/CheckoutModal'
@@ -28,7 +27,6 @@ function App() {
             <Benefits />
             <Categories />
             <ReceitaSection receipt={receipt} onReceiptChange={setReceipt} />
-            <WhatsAppGroup />
           </main>
           <Footer />
           <CartDrawer onCheckout={setCheckoutOpen} />

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800" role="img">
+ 
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#fff7dd"/>
+    <stop offset="1" stop-color="#eaf7ed"/>
+  </linearGradient>
+  <linearGradient id="white" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#e8f1ec"/><stop offset=".25" stop-color="#ffffff"/><stop offset=".78" stop-color="#ffffff"/><stop offset="1" stop-color="#dce8e3"/>
+  </linearGradient>
+  <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#5ad9b8"/><stop offset=".5" stop-color="#09a685"/><stop offset="1" stop-color="#036d62"/>
+  </linearGradient>
+  <linearGradient id="blue" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#195b82"/><stop offset=".25" stop-color="#218eaa"/><stop offset=".73" stop-color="#41bed2"/><stop offset="1" stop-color="#176c8b"/>
+  </linearGradient>
+  <linearGradient id="amber" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#f5c445"/><stop offset=".25" stop-color="#ffe9a1"/><stop offset=".7" stop-color="#ffe06c"/><stop offset="1" stop-color="#edb12f"/>
+  </linearGradient>
+  <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="16"/>
+  </filter>
+  <filter id="softshadow" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="12" stdDeviation="17" flood-color="#1e5346" flood-opacity=".24"/>
+  </filter>
+</defs>
+
+ <rect width="600" height="800" fill="url(#bg)"/>
+ <circle cx="510" cy="120" r="195" fill="#fff" opacity=".3"/>
+ <circle cx="70" cy="675" r="210" fill="#fff" opacity=".24"/>
+ <path d="M0 690 C130 650, 270 680, 600 625 V800 H0" fill="#fff" opacity=".35"/>
+ <ellipse cx="300" cy="693" rx="160" ry="27" fill="#1b6257" opacity=".18" filter="url(#shadow)"/>
+ <g filter="url(#softshadow)">
+ <rect x="254" y="137" width="92" height="63" rx="13" fill="#e9b84d" stroke="#dda83d" stroke-width="4"/>
+ <path d="M230 187 Q230 165 250 165 H350 Q370 165 370 187 L393 591 Q395 635 352 641 H248 Q205 635 207 591Z" fill="url(#white)" stroke="#e1e8e4" stroke-width="3"/>
+ <path d="M208 482 H391 L390 586 Q389 635 350 637 H249 Q211 631 210 586Z" fill="url(#amber)"/>
+ <rect x="229" y="282" width="143" height="171" rx="16" fill="#fff9e4"/>
+ <circle cx="300" cy="333" r="23" fill="#ffbe35"/>
+ <g stroke="#ffbe35" stroke-width="6" stroke-linecap="round">
+ <path d="M300 296 v-13 M300 372 v13 M263 333 h-13 M337 333 h13 M274 307 l-10 -10 M326 359 l10 10 M326 307 l10 -10 M274 359 l-10 10" />
+ </g><text x="300" y="401" fill="#71501b" font-family="Arial, sans-serif" font-size="20" font-weight="700" text-anchor="middle" letter-spacing="0">PROTEÇÃO</text><text x="300" y="433" fill="#0a6e5c" font-family="Arial, sans-serif" font-size="31" font-weight="700" text-anchor="middle" letter-spacing="0">SOLAR</text><text x="300" y="548" fill="#64501d" font-family="Arial, sans-serif" font-size="42" font-weight="700" text-anchor="middle" letter-spacing="0">FPS 50</text><text x="300" y="590" fill="#665724" font-family="Arial, sans-serif" font-size="20" font-weight="700" text-anchor="middle" letter-spacing="0">UVA + UVB</text></g>
+ </svg>
