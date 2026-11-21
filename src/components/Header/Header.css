@@ -1,5 +1,6 @@
 /* Botão de conta no cabeçalho + destaque do menu ativo */
-.hd-login, .hd-user {
+.hd-login,
+.hd-user {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -14,10 +15,33 @@
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.hd-login:hover, .hd-user:hover { border-color: var(--color-primary, #007b5e); color: var(--color-primary, #007b5e); }
-.hd-login svg { width: 18px; height: 18px; }
-.hd-avatar {
-  width: 26px; height: 26px; display: grid; place-items: center;
-  border-radius: 50%; background: var(--color-primary, #007b5e); color: #fff; font-size: 0.8rem; font-weight: 800;
+.hd-login:hover,
+.hd-user:hover {
+  border-color: var(--color-primary, #007b5e);
+  color: var(--color-primary, #007b5e);
 }
-@media (max-width: 900px) { .hd-login span, .hd-user-name { display: none; } .hd-login, .hd-user { padding: 0.5rem; } }
+.hd-login svg {
+  width: 18px;
+  height: 18px;
+}
+.hd-avatar {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-primary, #007b5e);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+@media (max-width: 900px) {
+  .hd-login span,
+  .hd-user-name {
+    display: none;
+  }
+  .hd-login,
+  .hd-user {
+    padding: 0.5rem;
+  }
+}

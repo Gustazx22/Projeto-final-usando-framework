@@ -1,4 +1,4 @@
-import './Hero.css'
+import "./Hero.css";
 
 function Hero() {
   return (
@@ -9,14 +9,21 @@ function Hero() {
             <span className="badge-dot" aria-hidden="true"></span>
             <span>ENTREGA RÁPIDA EM TODO BRASIL</span>
           </div>
-          <h1 id="hero-title">Sua saúde em <span className="highlight">boas mãos</span></h1>
+          <h1 id="hero-title">
+            Sua saúde em <span className="highlight">boas mãos</span>
+          </h1>
           <p className="hero-subtitle">
-            Farmácia e drogaria virtual com entrega facilitada, receita digital em PDF para controlados
-            e retenção de lote. Compre medicamentos, genéricos, vitaminas e dermocosméticos com segurança.
+            Farmácia e drogaria virtual com entrega facilitada, receita digital
+            em PDF para controlados e retenção de lote. Compre medicamentos,
+            genéricos, vitaminas e dermocosméticos com segurança.
           </p>
           <div className="hero-actions">
-            <a href="#medicamentos" className="btn btn-primary btn-lg">Comprar agora <span aria-hidden="true">→</span></a>
-            <a href="#receita" className="btn btn-secondary btn-lg">Enviar receita <span aria-hidden="true">→</span></a>
+            <a href="#medicamentos" className="btn btn-primary btn-lg">
+              Comprar agora <span aria-hidden="true">→</span>
+            </a>
+            <a href="#receita" className="btn btn-secondary btn-lg">
+              Enviar receita <span aria-hidden="true">→</span>
+            </a>
           </div>
           <div className="hero-stats">
             <div className="stat">
@@ -49,13 +56,15 @@ function Hero() {
             />
             <div className="hero-price-tag">
               <span className="price-label">A partir de</span>
-              <span className="price-value">R$ <strong>5</strong>,90</span>
+              <span className="price-value">
+                R$ <strong>5</strong>,90
+              </span>
             </div>
           </div>
         </div>
       </div>
     </section>
-  )
+  );
 }
 
-export default Hero
+export default Hero;
